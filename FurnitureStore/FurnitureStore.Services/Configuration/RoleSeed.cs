@@ -1,10 +1,5 @@
 ﻿using FurnitureStore.Models.Enums;
 using FurnitureStore.Services.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FurnitureStore.Services.Configuration
 {

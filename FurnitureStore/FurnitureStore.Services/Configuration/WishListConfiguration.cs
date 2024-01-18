@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FurnitureStore.Services.Configuration
 {
-    public sealed class SubcategoryConfiguration : IEntityTypeConfiguration<Subcategory>
+    public sealed class WishListConfiguration : IEntityTypeConfiguration<WishList>
     {
-        public void Configure(EntityTypeBuilder<Subcategory> builder)
+        public void Configure(EntityTypeBuilder<WishList> builder)
         {
             builder.Property(u => u.Id).ValueGeneratedOnAdd();
-            builder.HasOne(p => p.Category).WithMany(c => c.Subcategories).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(r => r.Customer).WithMany(u => u.WishLists).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
