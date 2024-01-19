@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FurnitureStore.Services.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class AddedDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -105,54 +105,69 @@ namespace FurnitureStore.Services.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<double>(type: "float", nullable: false),
-                    Dimensions = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Dimensions = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsAvailableInStore = table.Column<bool>(type: "bit", nullable: false),
                     IsAvailableOnline = table.Column<bool>(type: "bit", nullable: false),
                     Delivery = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CategoryId = table.Column<long>(type: "bigint", nullable: false),
                     SubcategoryId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Products_Subcategories_SubcategoryId",
                         column: x => x.SubcategoryId,
                         principalTable: "Subcategories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "CustomFurnitureReservations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ReservationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReservationStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CategoryId = table.Column<long>(type: "bigint", nullable: false)
+                    AdminId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CustomFurnitureReservations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CustomFurnitureReservations_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
+                        name: "FK_CustomFurnitureReservations_Users_AdminId",
+                        column: x => x.AdminId,
+                        principalTable: "Users",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GiftCards",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CardNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsActivated = table.Column<bool>(type: "bit", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GiftCards", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CustomFurnitureReservations_Users_CustomerId",
-                        column: x => x.CustomerId,
+                        name: "FK_GiftCards_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id");
                 });
@@ -165,17 +180,11 @@ namespace FurnitureStore.Services.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Heading = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CategoryId = table.Column<long>(type: "bigint", nullable: false),
                     AdminId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Notifications_Users_AdminId",
                         column: x => x.AdminId,
@@ -187,10 +196,11 @@ namespace FurnitureStore.Services.Migrations
                 name: "Orders",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TotalPrice = table.Column<double>(type: "float", nullable: false),
+                    Delivery = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -204,22 +214,41 @@ namespace FurnitureStore.Services.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Payments",
+                name: "ProductReservations",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Amount = table.Column<double>(type: "float", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReservationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Payments", x => x.Id);
+                    table.PrimaryKey("PK_ProductReservations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Payments_Users_CustomerId",
+                        name: "FK_ProductReservations_Users_CustomerId",
                         column: x => x.CustomerId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Promotions",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Heading = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AdminId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Promotions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Promotions_Users_AdminId",
+                        column: x => x.AdminId,
                         principalTable: "Users",
                         principalColumn: "Id");
                 });
@@ -269,10 +298,29 @@ namespace FurnitureStore.Services.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Pictures",
+                name: "WishLists",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WishLists", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WishLists_Users_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductPictures",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     URL = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ImageData = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
@@ -280,48 +328,23 @@ namespace FurnitureStore.Services.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Pictures", x => x.Id);
+                    table.PrimaryKey("PK_ProductPictures", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Pictures_Products_ProductId",
+                        name: "FK_ProductPictures_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Reservations",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ReservationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReservationStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProductId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Reservations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Reservations_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Reservations_Users_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "OrderItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    OrderId = table.Column<long>(type: "bigint", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
@@ -339,6 +362,111 @@ namespace FurnitureStore.Services.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Payments",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Amount = table.Column<double>(type: "float", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OrderId = table.Column<long>(type: "bigint", nullable: false),
+                    ProductReservationId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Payments_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Payments_ProductReservations_ProductReservationId",
+                        column: x => x.ProductReservationId,
+                        principalTable: "ProductReservations",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Payments_Users_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductReservationItems",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    ProductReservationId = table.Column<long>(type: "bigint", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductReservationItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductReservationItems_ProductReservations_ProductReservationId",
+                        column: x => x.ProductReservationId,
+                        principalTable: "ProductReservations",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ProductReservationItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductPromotions",
+                columns: table => new
+                {
+                    PromotionId = table.Column<long>(type: "bigint", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductPromotions", x => new { x.PromotionId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_ProductPromotions_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ProductPromotions_Promotions_PromotionId",
+                        column: x => x.PromotionId,
+                        principalTable: "Promotions",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WishListItems",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    WishListId = table.Column<long>(type: "bigint", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WishListItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WishListItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WishListItems_WishLists_WishListId",
+                        column: x => x.WishListId,
+                        principalTable: "WishLists",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "Id", "Name" },
@@ -349,24 +477,19 @@ namespace FurnitureStore.Services.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomFurnitureReservations_CategoryId",
+                name: "IX_CustomFurnitureReservations_AdminId",
                 table: "CustomFurnitureReservations",
-                column: "CategoryId");
+                column: "AdminId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomFurnitureReservations_CustomerId",
-                table: "CustomFurnitureReservations",
-                column: "CustomerId");
+                name: "IX_GiftCards_UserId",
+                table: "GiftCards",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_AdminId",
                 table: "Notifications",
                 column: "AdminId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_CategoryId",
-                table: "Notifications",
-                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
@@ -389,14 +512,39 @@ namespace FurnitureStore.Services.Migrations
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Pictures_ProductId",
-                table: "Pictures",
+                name: "IX_Payments_OrderId",
+                table: "Payments",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_ProductReservationId",
+                table: "Payments",
+                column: "ProductReservationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductPictures_ProductId",
+                table: "ProductPictures",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_CategoryId",
-                table: "Products",
-                column: "CategoryId");
+                name: "IX_ProductPromotions_ProductId",
+                table: "ProductPromotions",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductReservationItems_ProductId",
+                table: "ProductReservationItems",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductReservationItems_ProductReservationId",
+                table: "ProductReservationItems",
+                column: "ProductReservationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductReservations_CustomerId",
+                table: "ProductReservations",
+                column: "CustomerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_SubcategoryId",
@@ -404,19 +552,14 @@ namespace FurnitureStore.Services.Migrations
                 column: "SubcategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reports_AdminId",
-                table: "Reports",
+                name: "IX_Promotions_AdminId",
+                table: "Promotions",
                 column: "AdminId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reservations_CustomerId",
-                table: "Reservations",
-                column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reservations_ProductId",
-                table: "Reservations",
-                column: "ProductId");
+                name: "IX_Reports_AdminId",
+                table: "Reports",
+                column: "AdminId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleUser_UsersId",
@@ -432,6 +575,21 @@ namespace FurnitureStore.Services.Migrations
                 name: "IX_Users_CityId",
                 table: "Users",
                 column: "CityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WishListItems_ProductId",
+                table: "WishListItems",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WishListItems_WishListId",
+                table: "WishListItems",
+                column: "WishListId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WishLists_CustomerId",
+                table: "WishLists",
+                column: "CustomerId");
         }
 
         /// <inheritdoc />
@@ -439,6 +597,9 @@ namespace FurnitureStore.Services.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CustomFurnitureReservations");
+
+            migrationBuilder.DropTable(
+                name: "GiftCards");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
@@ -450,37 +611,52 @@ namespace FurnitureStore.Services.Migrations
                 name: "Payments");
 
             migrationBuilder.DropTable(
-                name: "Pictures");
+                name: "ProductPictures");
+
+            migrationBuilder.DropTable(
+                name: "ProductPromotions");
+
+            migrationBuilder.DropTable(
+                name: "ProductReservationItems");
 
             migrationBuilder.DropTable(
                 name: "Reports");
 
             migrationBuilder.DropTable(
-                name: "Reservations");
+                name: "RoleUser");
 
             migrationBuilder.DropTable(
-                name: "RoleUser");
+                name: "WishListItems");
 
             migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "Promotions");
+
+            migrationBuilder.DropTable(
+                name: "ProductReservations");
 
             migrationBuilder.DropTable(
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "WishLists");
 
             migrationBuilder.DropTable(
                 name: "Subcategories");
 
             migrationBuilder.DropTable(
-                name: "Cities");
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "Cities");
         }
     }
 }

@@ -26,10 +26,8 @@
     <Folder Include="Subcategory\" />
     <Folder Include="User\" />
     <Folder Include="Role\" />
-    <Folder Include="Reservation\" />
     <Folder Include="Report\" />
     <Folder Include="Product\" />
-    <Folder Include="Picture\" />
     <Folder Include="Payment\" />
     <Folder Include="OrderItem\" />
     <Folder Include="Order\" />

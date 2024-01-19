@@ -9,6 +9,8 @@ namespace FurnitureStore.Services.Configuration
         public void Configure(EntityTypeBuilder<Order> builder)
         {
             builder.Property(u => u.Id).ValueGeneratedOnAdd();
+            builder.Property(u => u.TotalPrice)
+               .HasColumnType("decimal(18,2)");
             builder.HasOne(r => r.Customer).WithMany(u => u.Orders).OnDelete(DeleteBehavior.NoAction);
         }
     }

@@ -28,8 +28,12 @@ namespace FurnitureStore.Models.User
         public virtual ICollection<Payment.Payment> Payments { get; set; } = new List<Payment.Payment>();
         public virtual ICollection<Report.Report> Reports { get; set; } = new List<Report.Report>();
         public virtual ICollection<CustomFurnitureReservation.CustomFurnitureReservation> CustomFurnitureReservations { get; set; } = new List<CustomFurnitureReservation.CustomFurnitureReservation>();
-        public virtual ICollection<Reservation.Reservation> Reservations { get; set; } = new List<Reservation.Reservation>();
+        public virtual ICollection<ProductReservation.ProductReservation> Reservations { get; set; } = new List<ProductReservation.ProductReservation>();
         public virtual ICollection<Order.Order> Orders { get; set; } = new List<Order.Order>();
+
+        public virtual ICollection<Promotion.Promotion> Promotions { get; set; } = new List<Promotion.Promotion>();
+        public virtual ICollection<WishList.WishList> WishLists { get; set; } = new List<WishList.WishList>();
+        public virtual ICollection<GiftCard.GiftCard> GiftCards { get; set; } = new List<GiftCard.GiftCard>();
 
         [NotMapped]
         public string FullName

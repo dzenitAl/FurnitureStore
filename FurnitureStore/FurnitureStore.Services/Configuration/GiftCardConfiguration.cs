@@ -9,6 +9,8 @@ namespace FurnitureStore.Services.Configuration
         public void Configure(EntityTypeBuilder<GiftCard> builder)
         {
             builder.Property(u => u.Id).ValueGeneratedOnAdd();
+            builder.Property(u => u.Amount)
+               .HasColumnType("decimal(18,2)");
             builder.HasOne(r => r.User).WithMany(u => u.GiftCards).OnDelete(DeleteBehavior.NoAction);
         }
     }

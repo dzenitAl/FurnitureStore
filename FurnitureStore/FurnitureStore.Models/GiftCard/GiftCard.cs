@@ -1,5 +1,5 @@
 ﻿
-namespace FurnitureStore.Services.Database
+namespace FurnitureStore.Models.GiftCard
 {
     public class GiftCard
     {
@@ -10,6 +10,6 @@ namespace FurnitureStore.Services.Database
         public DateTime ExpiryDate { get; set; }
         public bool IsActivated { get; set; }
         public string UserId { get; set; }
-        public User User { get; set; }
+        public User.User User { get; set; }
     }
 }
