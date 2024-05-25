@@ -1,7 +1,9 @@
 ﻿
+using FurnitureStore.Services.Domain.Base;
+
 namespace FurnitureStore.Services.Database
 {
-    public class OrderItem
+    public class OrderItem : BaseSoftDeleteEntity
     {
         public long Id { get; set; }
         public int Quantity { get; set; }

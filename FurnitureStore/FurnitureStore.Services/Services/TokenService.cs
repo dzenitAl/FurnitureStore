@@ -1,12 +1,9 @@
-﻿using FurnitureStore.Services.Database;
+﻿using FurnitureStore.Models.Token;
+using FurnitureStore.Services.Database;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FurnitureStore.Services.Services
 {
@@ -25,15 +22,15 @@ namespace FurnitureStore.Services.Services
             _durationInMinutes = durationInMinutes;
         }
 
-        //public TokenInfo GenerateToken(User user, string ipAddress, string adminId = null, string adminUserName = null)
-        //{
-        //    var accessToken = GenerateAccessToken(user, adminId, adminUserName);
+        public TokenInfo GenerateToken(User user, string ipAddress, string adminId = null, string adminUserName = null)
+        {
+            var accessToken = GenerateAccessToken(user, adminId, adminUserName);
 
-        //    return new TokenInfo
-        //    {
-        //        AccessToken = accessToken,
-        //    };
-        //}
+            return new TokenInfo
+            {
+                AccessToken = accessToken,
+            };
+        }
 
         private string GenerateAccessToken(User user, string adminId = null, string adminUserName = null)
         {

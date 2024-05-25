@@ -8,8 +8,9 @@ namespace FurnitureStore.Services.Configuration
     {
         public void Configure(EntityTypeBuilder<Promotion> builder)
         {
-            builder.Property(u => u.Id).ValueGeneratedOnAdd();
-            builder.HasOne(n => n.Admin).WithMany(n => n.Promotions).OnDelete(DeleteBehavior.NoAction);
+            builder.Property(p => p.Id).ValueGeneratedOnAdd();
+            builder.HasOne(p => p.Admin).WithMany(p => p.Promotions).OnDelete(DeleteBehavior.NoAction);
+            builder.HasMany(p => p.Products).WithMany(p => p.Promotions);
         }
     }
 }

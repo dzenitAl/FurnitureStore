@@ -9,7 +9,5 @@ namespace FurnitureStore.Models.GiftCard
         public decimal Amount { get; set; }
         public DateTime ExpiryDate { get; set; }
         public bool IsActivated { get; set; }
-        public string UserId { get; set; }
-        public User.User User { get; set; }
     }
 }

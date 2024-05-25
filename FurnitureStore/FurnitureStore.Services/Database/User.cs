@@ -1,9 +1,10 @@
 ﻿using FurnitureStore.Models.Enums;
+using FurnitureStore.Services.Domain.Base;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FurnitureStore.Services.Database
 {
-    public class User
+    public class User : BaseSoftDeleteEntity
     {
         public string Id { get; set; }
         public string Username { get; set; }

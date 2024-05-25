@@ -1,7 +1,9 @@
 ﻿
+using FurnitureStore.Services.Domain.Base;
+
 namespace FurnitureStore.Services.Database
 {
-    public class Product
+    public class Product : BaseSoftDeleteEntity
     {
         public long Id { get; set; }
         public string Name { get; set; }
@@ -11,9 +13,10 @@ namespace FurnitureStore.Services.Database
         public bool IsAvailableInStore { get; set; }
         public bool IsAvailableOnline { get; set; }
         public string Delivery { get; set; }
+        public string StateMachine { get; set; }
         public long SubcategoryId { get; set; }
         public Subcategory Subcategory { get; set; }
-        public virtual ICollection<ProductPromotion> ProductPromotions { get; set; } = new List<ProductPromotion>();
+        public virtual ICollection<Promotion> Promotions { get; set; } = new List<Promotion>();
         public virtual ICollection<ProductReservationItem> ProductReservationItems { get; set; } = new List<ProductReservationItem>();
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public virtual ICollection<ProductPicture> ProductPictures { get; set; } = new List<ProductPicture>();

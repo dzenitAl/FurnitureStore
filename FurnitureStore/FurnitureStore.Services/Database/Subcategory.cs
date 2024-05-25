@@ -1,7 +1,9 @@
 ﻿
+using FurnitureStore.Services.Domain.Base;
+
 namespace FurnitureStore.Services.Database
 {
-    public class Subcategory
+    public class Subcategory : BaseSoftDeleteEntity
     {
         public long Id { get; set; }
         public string Name { get; set; }

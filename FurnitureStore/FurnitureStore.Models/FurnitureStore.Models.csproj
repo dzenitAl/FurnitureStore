@@ -22,16 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="CustomFurnitureReservation\" />
-    <Folder Include="Subcategory\" />
     <Folder Include="User\" />
     <Folder Include="Role\" />
-    <Folder Include="Report\" />
-    <Folder Include="Product\" />
-    <Folder Include="Payment\" />
-    <Folder Include="OrderItem\" />
-    <Folder Include="Order\" />
-    <Folder Include="Notification\" />
   </ItemGroup>
 
 </Project>

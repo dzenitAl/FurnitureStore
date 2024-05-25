@@ -1,7 +1,9 @@
 ﻿
+using FurnitureStore.Services.Domain.Base;
+
 namespace FurnitureStore.Services.Database
 {
-    public class Payment
+    public class Payment : BaseSoftDeleteEntity
     {
         public long Id { get; set; }
         public double Amount { get; set; }
@@ -13,6 +15,7 @@ namespace FurnitureStore.Services.Database
         public Order Order { get; set; }
         public long? ProductReservationId { get; set; }
         public ProductReservation ProductReservation { get; set; }
-        
+        public long? ReportId { get; set; }
+        public Report Report { get; set; }
     }
 }

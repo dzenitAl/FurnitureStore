@@ -1,5 +1,5 @@
 ﻿
-namespace FurnitureStore.Models.Picture
+namespace FurnitureStore.Models.ProductPicture
 {
     public class ProductPicture
     {

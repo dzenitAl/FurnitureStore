@@ -8,10 +8,11 @@ namespace FurnitureStore.Services.Configuration
     {
         public void Configure(EntityTypeBuilder<Payment> builder)
         {
-            builder.Property(u => u.Id).ValueGeneratedOnAdd();
-            builder.HasOne(n => n.Customer).WithMany(n => n.Payments).OnDelete(DeleteBehavior.NoAction);
-            builder.HasOne(n => n.Order).WithMany(n => n.Payments).OnDelete(DeleteBehavior.NoAction);
-            builder.HasOne(n => n.ProductReservation).WithMany(n => n.Payments).OnDelete(DeleteBehavior.NoAction);
+            builder.Property(p => p.Id).ValueGeneratedOnAdd();
+            builder.HasOne(p => p.Customer).WithMany(p => p.Payments).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(p => p.Order).WithMany(p => p.Payments).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(p => p.ProductReservation).WithMany(p => p.Payments).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(p => p.Report).WithMany(p => p.Payments).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

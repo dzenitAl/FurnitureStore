@@ -11,6 +11,7 @@ namespace FurnitureStore.Models.CustomFurnitureReservation
         public string PhoneNumber { get; set; }
         public string Content { get; set; }
         public DateTime ReservationDate { get; set; }
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public string ReservationStatus { get; set; }
         public string AdminId { get; set; }
         public User.User Admin { get; set; }

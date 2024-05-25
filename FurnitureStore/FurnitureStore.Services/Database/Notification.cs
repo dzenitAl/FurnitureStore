@@ -1,7 +1,9 @@
 ﻿
+using FurnitureStore.Services.Domain.Base;
+
 namespace FurnitureStore.Services.Database
 {
-    public class Notification
+    public class Notification : BaseSoftDeleteEntity
     {
         public long Id { get; set; }
         public string Heading { get; set; }
