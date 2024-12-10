@@ -10,6 +10,7 @@ namespace FurnitureStore.Services.Configuration
         {
             builder.Property(u => u.Id).ValueGeneratedOnAdd();
             builder.HasOne(p => p.Product).WithMany(c => c.ProductPictures).OnDelete(DeleteBehavior.NoAction);
+
         }
     }
 }

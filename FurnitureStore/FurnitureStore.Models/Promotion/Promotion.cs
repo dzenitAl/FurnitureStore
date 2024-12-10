@@ -1,5 +1,6 @@
 ﻿
 namespace FurnitureStore.Models.Promotion
+
 {
     public class Promotion
     {
@@ -8,5 +9,6 @@ namespace FurnitureStore.Models.Promotion
         public string Content { get; set; }
         public string AdminId { get; set; }
         public User.User Admin { get; set; }
+        public List<Product.Product> Products { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace FurnitureStore.Models.SearchObjects
     {
         public DateTime? MinReservationDate { get; set; }
         public DateTime? MaxReservationDate { get; set; }
-        public string CustomerId { get; set; }
+        public string? CustomerId { get; set; }
     }
 
 }

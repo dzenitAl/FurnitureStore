@@ -68,5 +68,12 @@ namespace FurnitureStore.Controllers
             return Ok(await _accountService.GetAll(filter));
         }
 
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<UserResponse>> GetUserById(string userId)
+        {
+            var user = await _accountService.GetUserById(userId);
+            return Ok(user);
+        }
+
     }
 }

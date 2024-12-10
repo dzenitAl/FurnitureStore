@@ -30,7 +30,7 @@ namespace FurnitureStore.Services.Services
 
         public override IQueryable<Database.Notification> AddInclude(IQueryable<Database.Notification> query, NotificationSearchObject? search = null)
         {
-            query = query.Include("Section").Include("Admin");
+            query = query.Include("Admin");
             return base.AddInclude(query, search);
         }
     }

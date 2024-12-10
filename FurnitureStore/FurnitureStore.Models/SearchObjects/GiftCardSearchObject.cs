@@ -8,8 +8,8 @@ namespace FurnitureStore.Models.SearchObjects
 {
     public class GiftCardSearchObject : BaseSearchObject
     {
-        public string Name { get; set; }
-        public string CardNumber { get; set; }
-        public bool IsActivated { get; set; }
+        public string? Name { get; set; }
+        public string? CardNumber { get; set; }
+        public bool? IsActivated { get; set; }
     }
 }

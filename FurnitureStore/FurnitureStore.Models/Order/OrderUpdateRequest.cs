@@ -8,6 +8,6 @@ namespace FurnitureStore.Models.Order
 {
     public class OrderUpdateRequest
     {
-        public string Delivery { get; set; }
+        public bool? IsApproved { get; set; }
     }
 }

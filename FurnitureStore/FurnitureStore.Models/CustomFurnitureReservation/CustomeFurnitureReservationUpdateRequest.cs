@@ -8,8 +8,7 @@ namespace FurnitureStore.Models.CustomFurnitureReservation
 {
     public class CustomeFurnitureReservationUpdateRequest
     {
-        public DateTime ReservationDate { get; set; }
-        public string ReservationStatus { get; set; }
+        public bool? ReservationStatus { get; set; }
 
     }
 }

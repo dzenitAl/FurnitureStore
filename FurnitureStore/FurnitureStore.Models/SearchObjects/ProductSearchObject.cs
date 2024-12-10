@@ -8,7 +8,9 @@ namespace FurnitureStore.Models.SearchObjects
 {
     public class ProductSearchObject : BaseSearchObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
+        public string? Barcode { get; set; }
+
         public double? MinPrice { get; set; }
         public double? MaxPrice { get; set; }
         public bool? IsAvailableInStore { get; set; }

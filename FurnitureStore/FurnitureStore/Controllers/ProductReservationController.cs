@@ -8,7 +8,7 @@ namespace FurnitureStore.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class ProductReservationController : BaseCRUDController<Models.ProductReservation.ProductReservation,
-        ProductReservationSearchObject, Models.ProductReservation.ProductReservation, ProductReservationUpdateRequest, long>
+        ProductReservationSearchObject, ProductReservationUpdateRequest, ProductReservationUpdateRequest, long>
     {
         public ProductReservationController(ILogger<BaseController<Models.ProductReservation.ProductReservation, ProductReservationSearchObject, long>> logger,
             IProductReservationService service) : base(logger, service)

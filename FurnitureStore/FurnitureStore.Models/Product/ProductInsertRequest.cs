@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FurnitureStore.Models.Product
 {
@@ -22,6 +18,8 @@ namespace FurnitureStore.Models.Product
         [Range(0, double.MaxValue, ErrorMessage = "Price must be between 0 and the maximum value.")]
         public double Price { get; set; }
         public string Dimensions { get; set; }
+        public bool IsAvailableInStore { get; set; }
+        public bool IsAvailableOnline { get; set; }
         public long SubcategoryId { get; set; }
 
     }

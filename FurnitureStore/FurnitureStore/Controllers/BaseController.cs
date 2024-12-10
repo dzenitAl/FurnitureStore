@@ -31,5 +31,10 @@ namespace FurnitureStore.Controllers
         {
             return await _service.GetById(id);
         }
+        [HttpDelete("{id}")]
+        public async Task Delete(TId id)
+        {
+            await _service.Delete(id);
+        }
     }
 }

@@ -13,8 +13,6 @@ namespace FurnitureStore.Services.Database
         public User Customer { get; set; }
         public long? OrderId { get; set; }
         public Order Order { get; set; }
-        public long? ProductReservationId { get; set; }
-        public ProductReservation ProductReservation { get; set; }
         public long? ReportId { get; set; }
         public Report Report { get; set; }
     }

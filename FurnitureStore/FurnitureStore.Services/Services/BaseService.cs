@@ -21,24 +21,33 @@ namespace FurnitureStore.Services.Services
 
         public virtual async Task<PagedResult<T>> Get(TSearch? search = null)
         {
-            var query = _context.Set<TDb>().AsQueryable();
+            
 
-            PagedResult<T> result = new PagedResult<T>();
 
-            query = AddFilter(query, search);
-            query = AddInclude(query, search);
-
-            result.Count = await query.CountAsync();
-
-            if (search?.Page.HasValue == true && search?.PageSize.HasValue == true)
+            try
             {
-                query = query.Take(search.PageSize.Value).Skip(search.Page.Value * search.PageSize.Value);
-            }
-            var list = await query.ToListAsync();
+                var query = _context.Set<TDb>().AsQueryable();
 
-            var tmp = _mapper.Map<List<T>>(list);
-            result.Result = tmp;
-            return result;
+                PagedResult<T> result = new PagedResult<T>();
+
+                query = AddFilter(query, search);
+                query = AddInclude(query, search);
+
+                result.Count = await query.CountAsync();
+
+                if (search?.Page.HasValue == true && search?.PageSize.HasValue == true)
+                {
+                    query = query.Take(search.PageSize.Value).Skip(search.Page.Value * search.PageSize.Value);
+                }
+                var list = await query.ToListAsync();
+                var tmp = _mapper.Map<List<T>>(list);
+                result.Result = tmp;
+                return result;
+
+            }
+            catch (Exception ex) { }
+            return null;
+           
         }
 
         public virtual IQueryable<TDb> AddFilter(IQueryable<TDb> query, TSearch? search = null)
@@ -56,6 +65,12 @@ namespace FurnitureStore.Services.Services
 
             return _mapper.Map<T>(entity);
         }
+        public virtual async Task Delete(TId id)
+        {
+            var entity = await _context.Set<TDb>().FindAsync(id);
 
+            _context.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
     }
 }

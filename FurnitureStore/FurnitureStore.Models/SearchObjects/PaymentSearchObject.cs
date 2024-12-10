@@ -13,9 +13,9 @@ namespace FurnitureStore.Models.SearchObjects
         public double? MaxAmount { get; set; }
         public DateTime? MinPaymentDate { get; set; }
         public DateTime? MaxPaymentDate { get; set; }
-        public string MonthName { get; set; }
-        public int Year { get; set; }
-        public string CustomerId { get; set; }
+        public string? MonthName { get; set; }
+        public int? Year { get; set; }
+        public string? CustomerId { get; set; }
         public long? OrderId { get; set; }
         public long? ProductReservationId { get; set; }
     }

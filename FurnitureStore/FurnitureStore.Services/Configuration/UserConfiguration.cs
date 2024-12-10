@@ -13,7 +13,11 @@ namespace FurnitureStore.Services.Configuration
 
             builder.Property(u => u.Email).IsRequired().HasMaxLength(254);
             builder.Property(u => u.PasswordHash).IsRequired();
-            builder.HasOne(u => u.City).WithMany(u => u.Users).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(u => u.City).WithMany(u => u.Users);
+            builder.HasMany(r => r.GiftCardUsers).WithOne(u => u.User).OnDelete(DeleteBehavior.NoAction);
+
+
+
         }
     }
 }

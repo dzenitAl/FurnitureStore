@@ -62,7 +62,7 @@ namespace FurnitureStore.Services.Services
                 var user = new User()
                 {
                     Email = request.Email,
-                    Username = request.Email,
+                    Username = request.UserName,
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     Gender = request.Gender,
@@ -179,6 +179,28 @@ namespace FurnitureStore.Services.Services
             {
                 Result = result,
                 Count = users.Count()
+            };
+        }
+
+        public async Task<UserResponse> GetUserById(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new ApiException("User not found", System.Net.HttpStatusCode.NotFound);
+            }
+
+            return new UserResponse
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                BirthDate = user.BirthDate,
+                PhoneNumber = user.PhoneNumber,
+                Email = user.Email,
+                Gender = user.Gender,
+                UserType = this.GetUserTypes(user),
+                Id = user.Id,
+                Role = user.Roles.FirstOrDefault()?.Name
             };
         }
 

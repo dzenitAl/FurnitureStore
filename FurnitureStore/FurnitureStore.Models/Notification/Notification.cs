@@ -1,4 +1,6 @@
 ﻿
+using FurnitureStore.Models.Account;
+
 namespace FurnitureStore.Models.Notification
 {
     public class Notification
@@ -7,6 +9,6 @@ namespace FurnitureStore.Models.Notification
         public string Heading { get; set; }
         public string Content { get; set; }
         public string AdminId { get; set; }
-        public User.User Admin { get; set; }
+        public UserResponse Admin { get; set; }
     }
 }

@@ -6,7 +6,7 @@ using FurnitureStore.Services.Interfaces;
 
 namespace FurnitureStore.Services.Services
 {
-    public class CityService : BaseCRUDService<Models.City.City, Database.City, BaseSearchObject, Models.City.City, Models.City.City, long>, ICityService
+    public class CityService : BaseCRUDService<Models.City.City, Database.City, BaseSearchObject, Models.City.CityRequest, Models.City.CityRequest, long>, ICityService
     {
         public CityService(AppDbContext context, IMapper mapper) : base(context, mapper)
         {

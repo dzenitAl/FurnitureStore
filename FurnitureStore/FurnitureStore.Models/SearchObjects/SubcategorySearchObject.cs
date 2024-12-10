@@ -8,7 +8,7 @@ namespace FurnitureStore.Models.SearchObjects
 {
     public class SubcategorySearchObject : BaseSearchObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public long? CategoryId { get; set; }
     }
 

@@ -8,9 +8,9 @@ namespace FurnitureStore.Models.SearchObjects
 {
     public class PromotionSearchObject : BaseSearchObject
     {
-        public string Heading { get; set; }
-        public string Content { get; set; }
-        public string AdminId { get; set; }
+        public string? Heading { get; set; }
+        public string? Content { get; set; }
+        public string? AdminId { get; set; }
     }
 
 }

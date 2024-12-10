@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FurnitureStore.Models.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,9 +11,12 @@ namespace FurnitureStore.Models.SearchObjects
     {
         public DateTime? MinGenerationDate { get; set; }
         public DateTime? MaxGenerationDate { get; set; }
-        public string MonthName { get; set; }
-        public int Year { get; set; }
-        public string AdminId { get; set; }
+        public Month Month { get; set; }
+        public ReportType ReportType { get; set; }
+        public int? Year { get; set; }
+        public string? AdminId { get; set; }
+        public string? CustomerId { get; set; }
+
     }
 
 }

@@ -12,7 +12,9 @@ namespace FurnitureStore.Services.Services
 
         public virtual async Task BeforeInsert(TDb entity, TInsert insert)
         {
-
+        }
+        public virtual async Task BeforeUpdate(TDb entity, TUpdate update)
+        {
         }
 
         public virtual async Task<T> Insert(TInsert insert)
@@ -24,7 +26,15 @@ namespace FurnitureStore.Services.Services
             set.Add(entity);
             await BeforeInsert(entity, insert);
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception ex)
+            {
+
+            }
             return _mapper.Map<T>(entity);
         }
 
@@ -34,7 +44,7 @@ namespace FurnitureStore.Services.Services
             var set = _context.Set<TDb>();
 
             var entity = await set.FindAsync(id);
-
+            await BeforeUpdate(entity, update);
             _mapper.Map(update, entity);
 
             await _context.SaveChangesAsync();

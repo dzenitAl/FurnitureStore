@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FurnitureStore.Models.Account;
 using FurnitureStore.Models.Category;
 using FurnitureStore.Models.City;
 using FurnitureStore.Models.CustomFurnitureReservation;
@@ -14,7 +15,6 @@ using FurnitureStore.Models.Promotion;
 using FurnitureStore.Models.Report;
 using FurnitureStore.Models.Subcategory;
 using FurnitureStore.Models.WishList;
-using FurnitureStore.Models.WishListItem;
 
 
 namespace FurnitureStore.Services.MappingProfile
@@ -25,9 +25,6 @@ namespace FurnitureStore.Services.MappingProfile
         {
             CreateMap<Database.Payment, Models.Payment.Payment>();
             CreateMap<PaymentRequest, Database.Payment>();
-            //CreateMap<Database.Payment, PaymentResponse>()
-            //    .ForMember(dest => dest.MonthName, opt => opt.MapFrom(src => Enum.GetName(typeof(Month), src.Month)));
-
             CreateMap<Database.CustomFurnitureReservation, CustomFurnitureReservation>();
             CreateMap<CustomeFurnitureReservationInsertRequest, Database.CustomFurnitureReservation>();
             CreateMap<CustomeFurnitureReservationUpdateRequest, Database.CustomFurnitureReservation>();
@@ -47,23 +44,28 @@ namespace FurnitureStore.Services.MappingProfile
             CreateMap<SubcategoryRequest, Database.Subcategory>();
             CreateMap<Database.Category, Category>();
             CreateMap<CategoryRequest, Database.Category>();
+            CreateMap<Database.City, City>();
+            CreateMap<CityRequest, Database.City>();
             CreateMap<Database.Product, Product>();
             CreateMap<ProductInsertRequest, Database.Product>();
             CreateMap<ProductUpdateRequest, Database.Product>();
             CreateMap<Database.ProductPicture, ProductPicture>();
-            CreateMap<ProductPictureInsertRequest,Database.ProductPicture>();
-            CreateMap<ProductPictureUpdateRequest,Database.ProductPicture>();
+            CreateMap<ProductPictureInsertRequest, Database.ProductPicture>();
+            CreateMap<ProductPictureUpdateRequest, Database.ProductPicture>();
             CreateMap<Database.ProductReservation, Models.ProductReservation.ProductReservation>();
+            CreateMap<Models.ProductReservation.ProductReservation, Database.ProductReservation>();
+            CreateMap<Models.ProductReservation.ProductReservationUpdateRequest, Database.ProductReservation>();
+            CreateMap<Database.ProductReservation, Models.ProductReservation.ProductReservationUpdateRequest>();
             CreateMap<Database.ProductReservationItem, ProductReservationItem>();
-            CreateMap<ProductReservationItemRequest,Database.ProductReservationItem>();
+            CreateMap<ProductReservationItem, Database.ProductReservationItem>();
             CreateMap<Database.Report, Report>();
             CreateMap<ReportRequest, Database.Report>();
             CreateMap<Database.Promotion, Promotion>();
             CreateMap<PromotionRequest, Database.Promotion>();
             CreateMap<Database.WishList, WishList>();
             CreateMap<WishListRequest, Database.WishList>();
-            CreateMap<Database.WishListItem, WishListItem>();
-            CreateMap<WishListItemRequest ,Database.WishListItem>();
+            CreateMap<Database.User, UserResponse>();
+
         }
     }
 }

@@ -10,6 +10,10 @@ namespace FurnitureStore.Models.Promotion
     {
         public string Heading { get; set; }
         public string Content { get; set; }
+        public string AdminId { get; set; }
+        public List<long> ProductIds { get; set; }
+
+
     }
 
 }

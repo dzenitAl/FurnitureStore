@@ -8,7 +8,7 @@ namespace FurnitureStore.Services.Database
         public long Id { get; set; }
         public DateTime DateCreated { get; set; }
         public string CustomerId { get; set; }
-        public User Customer { get; set; }
-        public ICollection<WishListItem> WishListItems { get; set; }
+        public virtual User Customer { get; set; }
+        public ICollection<Product> Products { get; set; } = new HashSet<Product>();
     }
 }

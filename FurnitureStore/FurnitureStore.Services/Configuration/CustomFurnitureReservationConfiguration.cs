@@ -9,7 +9,7 @@ namespace FurnitureStore.Services.Configuration
         public void Configure(EntityTypeBuilder<CustomFurnitureReservation> builder)
         {
             builder.Property(u => u.Id).ValueGeneratedOnAdd();
-            builder.HasOne(r => r.Admin).WithMany(u => u.CustomFurnitureReservations).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(r => r.User).WithMany(u => u.CustomFurnitureReservations).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

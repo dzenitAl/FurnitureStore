@@ -8,8 +8,7 @@ namespace FurnitureStore.Models.ProductPicture
 {
     public class ProductPictureUpdateRequest
     {
-        public string URL { get; set; }
-        public byte[] ImageData { get; set; }
+        public string ImagePath { get; set; }
     }
 
 }

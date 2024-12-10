@@ -9,9 +9,9 @@ namespace FurnitureStore.Models.SearchObjects
     public class OrderSearchObject : BaseSearchObject
     {
         public DateTime? MinOrderDate { get; set; }
-        public string Delivery { get; set; }
+        public string? Delivery { get; set; }
         public decimal? MinTotalPrice { get; set; }
-        public string CustomerId { get; set; }
+        public string? CustomerId { get; set; }
 
     }
 }

@@ -95,18 +95,6 @@ namespace FurnitureStore.Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AdminId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -116,38 +104,29 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("Note")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ReservationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ReservationStatus")
+                    b.Property<bool>("ReservationStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdminId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("CustomFurnitureReservations");
                 });
@@ -160,8 +139,8 @@ namespace FurnitureStore.Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
 
                     b.Property<string>("CardNumber")
                         .IsRequired()
@@ -192,15 +171,33 @@ namespace FurnitureStore.Services.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.HasKey("Id");
+
+                    b.ToTable("GiftCards");
+                });
+
+            modelBuilder.Entity("FurnitureStore.Services.Database.GiftCardUsers", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("GiftCardId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GiftCardId");
+
                     b.HasIndex("UserId");
 
-                    b.ToTable("GiftCards");
+                    b.ToTable("GiftCardUsers");
                 });
 
             modelBuilder.Entity("FurnitureStore.Services.Database.Notification", b =>
@@ -266,9 +263,11 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Delivery")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Delivery")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("datetime2");
@@ -371,10 +370,6 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("ProductReservationId")
-                        .IsRequired()
-                        .HasColumnType("bigint");
-
                     b.Property<long?>("ReportId")
                         .IsRequired()
                         .HasColumnType("bigint");
@@ -384,8 +379,6 @@ namespace FurnitureStore.Services.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("OrderId");
-
-                    b.HasIndex("ProductReservationId");
 
                     b.HasIndex("ReportId");
 
@@ -400,6 +393,10 @@ namespace FurnitureStore.Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -408,10 +405,6 @@ namespace FurnitureStore.Services.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Delivery")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -440,16 +433,17 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
-                    b.Property<string>("StateMachine")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<long>("SubcategoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("WishListId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SubcategoryId");
+
+                    b.HasIndex("WishListId");
 
                     b.ToTable("Products");
                 });
@@ -468,9 +462,9 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<string>("CreatedById")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte[]>("ImageData")
+                    b.Property<string>("ImagePath")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("datetime2");
@@ -480,10 +474,6 @@ namespace FurnitureStore.Services.Migrations
 
                     b.Property<long>("ProductId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("URL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -512,6 +502,9 @@ namespace FurnitureStore.Services.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("datetime2");
@@ -638,6 +631,10 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<string>("CreatedById")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
@@ -650,9 +647,20 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReportType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AdminId");
+
+                    b.HasIndex("CustomerId");
 
                     b.ToTable("Reports");
                 });
@@ -823,50 +831,10 @@ namespace FurnitureStore.Services.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
 
                     b.ToTable("WishLists");
-                });
-
-            modelBuilder.Entity("FurnitureStore.Services.Database.WishListItem", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedById")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("ProductId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<long>("WishListId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("WishListId");
-
-                    b.ToTable("WishListItems");
                 });
 
             modelBuilder.Entity("ProductPromotion", b =>
@@ -901,22 +869,30 @@ namespace FurnitureStore.Services.Migrations
 
             modelBuilder.Entity("FurnitureStore.Services.Database.CustomFurnitureReservation", b =>
                 {
-                    b.HasOne("FurnitureStore.Services.Database.User", "Admin")
-                        .WithMany("CustomFurnitureReservations")
-                        .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Admin");
-                });
-
-            modelBuilder.Entity("FurnitureStore.Services.Database.GiftCard", b =>
-                {
                     b.HasOne("FurnitureStore.Services.Database.User", "User")
-                        .WithMany("GiftCards")
+                        .WithMany("CustomFurnitureReservations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FurnitureStore.Services.Database.GiftCardUsers", b =>
+                {
+                    b.HasOne("FurnitureStore.Services.Database.GiftCard", "GiftCard")
+                        .WithMany("GiftCardUsers")
+                        .HasForeignKey("GiftCardId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("FurnitureStore.Services.Database.User", "User")
+                        .WithMany("GiftCardUsers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("GiftCard");
 
                     b.Navigation("User");
                 });
@@ -976,12 +952,6 @@ namespace FurnitureStore.Services.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("FurnitureStore.Services.Database.ProductReservation", "ProductReservation")
-                        .WithMany("Payments")
-                        .HasForeignKey("ProductReservationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("FurnitureStore.Services.Database.Report", "Report")
                         .WithMany("Payments")
                         .HasForeignKey("ReportId")
@@ -991,8 +961,6 @@ namespace FurnitureStore.Services.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Order");
-
-                    b.Navigation("ProductReservation");
 
                     b.Navigation("Report");
                 });
@@ -1005,6 +973,11 @@ namespace FurnitureStore.Services.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("FurnitureStore.Services.Database.WishList", null)
+                        .WithMany("Products")
+                        .HasForeignKey("WishListId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.Navigation("Subcategory");
                 });
 
@@ -1013,7 +986,7 @@ namespace FurnitureStore.Services.Migrations
                     b.HasOne("FurnitureStore.Services.Database.Product", "Product")
                         .WithMany("ProductPictures")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -1068,7 +1041,15 @@ namespace FurnitureStore.Services.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("FurnitureStore.Services.Database.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Admin");
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("FurnitureStore.Services.Database.Subcategory", b =>
@@ -1087,7 +1068,7 @@ namespace FurnitureStore.Services.Migrations
                     b.HasOne("FurnitureStore.Services.Database.City", "City")
                         .WithMany("Users")
                         .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("City");
@@ -1096,31 +1077,12 @@ namespace FurnitureStore.Services.Migrations
             modelBuilder.Entity("FurnitureStore.Services.Database.WishList", b =>
                 {
                     b.HasOne("FurnitureStore.Services.Database.User", "Customer")
-                        .WithMany("WishLists")
-                        .HasForeignKey("CustomerId")
+                        .WithOne("WishList")
+                        .HasForeignKey("FurnitureStore.Services.Database.WishList", "CustomerId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("FurnitureStore.Services.Database.WishListItem", b =>
-                {
-                    b.HasOne("FurnitureStore.Services.Database.Product", "Product")
-                        .WithMany("WishListItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("FurnitureStore.Services.Database.WishList", "WishList")
-                        .WithMany("WishListItems")
-                        .HasForeignKey("WishListId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("WishList");
                 });
 
             modelBuilder.Entity("ProductPromotion", b =>
@@ -1163,6 +1125,11 @@ namespace FurnitureStore.Services.Migrations
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("FurnitureStore.Services.Database.GiftCard", b =>
+                {
+                    b.Navigation("GiftCardUsers");
+                });
+
             modelBuilder.Entity("FurnitureStore.Services.Database.Order", b =>
                 {
                     b.Navigation("OrderItems");
@@ -1177,14 +1144,10 @@ namespace FurnitureStore.Services.Migrations
                     b.Navigation("ProductPictures");
 
                     b.Navigation("ProductReservationItems");
-
-                    b.Navigation("WishListItems");
                 });
 
             modelBuilder.Entity("FurnitureStore.Services.Database.ProductReservation", b =>
                 {
-                    b.Navigation("Payments");
-
                     b.Navigation("ProductReservationItems");
                 });
 
@@ -1202,7 +1165,7 @@ namespace FurnitureStore.Services.Migrations
                 {
                     b.Navigation("CustomFurnitureReservations");
 
-                    b.Navigation("GiftCards");
+                    b.Navigation("GiftCardUsers");
 
                     b.Navigation("Notifications");
 
@@ -1216,12 +1179,13 @@ namespace FurnitureStore.Services.Migrations
 
                     b.Navigation("Reports");
 
-                    b.Navigation("WishLists");
+                    b.Navigation("WishList")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FurnitureStore.Services.Database.WishList", b =>
                 {
-                    b.Navigation("WishListItems");
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

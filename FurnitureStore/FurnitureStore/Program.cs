@@ -2,7 +2,6 @@ using FurnitureStore.Configuration;
 using FurnitureStore.Filters;
 using FurnitureStore.Services.Database;
 using FurnitureStore.Services.Interfaces;
-using FurnitureStore.Services.ProductStateMachine;
 using FurnitureStore.Services.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,12 +28,6 @@ builder.Services.AddTransient<ICityService, CityService>();
 builder.Services.AddTransient<IGiftCardService, GiftCardService>();
 
 builder.Services.AddTransient<IWishListService, WishListService>();
-builder.Services.AddTransient<IWishListItemService, WishListItemService>();
-
-builder.Services.AddTransient<BaseState>();
-builder.Services.AddTransient<InitialProductState>();
-builder.Services.AddTransient<DraftProductState>();
-builder.Services.AddTransient<ActiveProductState>();
 
 builder.Services.AddControllers(x =>
 {
@@ -70,6 +63,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles(); 
 
 app.MapControllers();
 
