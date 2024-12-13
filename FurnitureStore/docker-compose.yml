@@ -1,0 +1,32 @@
+services:
+  furniturestore-sql:
+    image: mcr.microsoft.com/mssql/server:2017-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "QWElkj132!"
+      MSSQL_PID: Developer
+    ports:
+      - "1401:1433"
+    expose:
+        - 1433
+    networks:
+      - furniturestore2024
+
+  furniturestore-api:
+    restart: unless-stopped
+    build:
+      context: .
+    environment:
+      ConnectionStrings:DefaultConnection: "Server=furniturestore-sql,1433;Database=180020;User=sa;Password=QWElkj132!;ConnectRetryCount=0;TrustServerCertificate=True"
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "7015:7015"
+    networks:
+      - furniturestore2024
+    depends_on:
+      - furniturestore-sql
+
+networks:
+  furniturestore2024:
+    driver: bridge

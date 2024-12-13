@@ -66,7 +66,7 @@ app.UseAuthorization();
 app.UseStaticFiles(); 
 
 app.MapControllers();
-
+app.SeedData();
 using (var scope = app.Services.CreateScope())
 {
     var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
