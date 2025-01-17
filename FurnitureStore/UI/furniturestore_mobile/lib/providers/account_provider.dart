@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:furniturestore_mobile/models/account/account.dart';
 import 'package:furniturestore_mobile/models/account/token_info.dart';
+import 'package:furniturestore_mobile/models/city/city.dart';
 import 'package:furniturestore_mobile/models/search_result.dart';
 import 'package:furniturestore_mobile/providers/base_provider.dart';
 import 'package:furniturestore_mobile/utils/utils.dart';
@@ -134,6 +135,32 @@ class AccountProvider extends BaseProvider<AccountModel> {
       return AccountModel.fromJson(data);
     } else {
       throw new Exception("Unknown error");
+    }
+  }
+
+  Future<List<CityModel>> fetchCities() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${BaseProvider.baseUrl}City'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
+        if (jsonResponse.containsKey('result')) {
+          final List<dynamic> cityList = jsonResponse['result'];
+          return cityList.map((city) => CityModel.fromJson(city)).toList();
+        } else {
+          throw Exception('Unexpected response format: "result" key not found');
+        }
+      } else {
+        throw Exception('Failed to load cities');
+      }
+    } catch (e) {
+      throw Exception('Failed to load cities');
     }
   }
 }

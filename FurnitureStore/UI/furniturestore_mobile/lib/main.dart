@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:furniturestore_mobile/providers/account_provider.dart';
 import 'package:furniturestore_mobile/providers/category_provider.dart';
+import 'package:furniturestore_mobile/providers/city_provider.dart';
 import 'package:furniturestore_mobile/providers/custom_reservation_provider.dart';
 import 'package:furniturestore_mobile/providers/gift_card_provider.dart';
 import 'package:furniturestore_mobile/providers/notification_provider.dart';
@@ -13,6 +14,7 @@ import 'package:furniturestore_mobile/providers/product_reservation.dart';
 import 'package:furniturestore_mobile/providers/promotion_provider.dart';
 import 'package:furniturestore_mobile/providers/subcategory_provider.dart';
 import 'package:furniturestore_mobile/providers/wish_list_provider.dart';
+import 'package:furniturestore_mobile/screens/account_profile/register_screen.dart';
 import 'package:furniturestore_mobile/screens/home/home_screen.dart';
 import 'package:furniturestore_mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
@@ -38,6 +40,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => GiftCardProvider()),
       ChangeNotifierProvider(create: (_) => CustomReservationProvider()),
       ChangeNotifierProvider(create: (_) => WishListProvider()),
+      ChangeNotifierProvider(create: (_) => CityProvider()),
     ],
     child: const MyMaterialApp(),
   ));
@@ -174,7 +177,20 @@ class LoginPage extends StatelessWidget {
                                 }
                               },
                               child: const Text("Prijavi se"),
-                            )
+                            ),
+                            const SizedBox(height: 10),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => RegisterPage()));
+                              },
+                              child: const Text(
+                                "Nemate profil? Registrujte se",
+                                style: TextStyle(
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),

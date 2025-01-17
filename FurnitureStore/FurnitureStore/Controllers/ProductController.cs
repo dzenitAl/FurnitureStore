@@ -13,6 +13,10 @@ namespace FurnitureStore.Controllers
         {
 
         }
-       
+        [HttpGet("{id}/recommend")]
+        public virtual List<Models.Product.Product> Recommend(int id)
+        {
+            return (_service as IProductService).Recommend(id);
+        }
     }
 }

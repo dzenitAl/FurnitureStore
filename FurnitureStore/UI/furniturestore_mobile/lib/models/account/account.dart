@@ -17,6 +17,8 @@ class AccountModel {
   int? userType;
   String? role;
   DateTime? birthDate;
+  int? cityId;
+
   AccountModel(
       this.role,
       this.fullName,
@@ -30,7 +32,8 @@ class AccountModel {
       this.password,
       this.confirmPassword,
       this.userType,
-      this.birthDate);
+      this.birthDate,
+      this.cityId);
 
   factory AccountModel.fromJson(Map<String, dynamic> json) =>
       _$AccountModelFromJson(json);

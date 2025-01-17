@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'dart:io';
 import 'package:furniturestore_mobile/models/product/product.dart';
+import 'package:furniturestore_mobile/providers/product_provider.dart';
 import 'package:furniturestore_mobile/utils/utils.dart';
 import 'package:furniturestore_mobile/widgets/master_screen.dart';
 
@@ -31,6 +32,8 @@ class ProductDetailScreen extends StatelessWidget {
               _buildProductInfo(),
               const SizedBox(height: 24),
               _buildActionButtons(context),
+              const SizedBox(height: 24),
+              _buildRecommendedProducts(),
             ],
           ),
         ),
@@ -198,7 +201,7 @@ class ProductDetailScreen extends StatelessWidget {
           icon: const Icon(Icons.favorite),
           label: const Text('Dodaj u listu želja'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color.fromARGB(255, 104, 201, 51),
+            backgroundColor: const Color.fromARGB(255, 104, 201, 51),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             textStyle: const TextStyle(fontSize: 16),
@@ -251,6 +254,97 @@ class ProductDetailScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRecommendedProducts() {
+    final productProvider = ProductProvider();
+
+    return FutureBuilder<List<ProductModel>>(
+      future: productProvider.getRecommendedProducts(product.id!),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Greška pri dohvaćanju preporučenih proizvoda: ${snapshot.error}',
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+            child: Text(
+              'Nema preporučenih proizvoda',
+              style: TextStyle(color: Color(0xFF424530)),
+            ),
+          );
+        } else {
+          final recommendedProducts = snapshot.data!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Preporučeni proizvodi',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1D3557),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommendedProducts.length,
+                  itemBuilder: (context, index) {
+                    final product = recommendedProducts[index];
+                    return _buildRecommendedProductCard(product);
+                  },
+                ),
+              ),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildRecommendedProductCard(ProductModel product) {
+    return Container(
+      width: 150,
+      margin: const EdgeInsets.only(right: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/images/furniture_logo.jpg',
+              height: 120,
+              width: 150,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            product.name ?? '',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            '${product.price} KM',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF70BC69),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

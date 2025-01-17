@@ -13,6 +13,7 @@ namespace FurnitureStore.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly ILogger<AccountController> _logger;
 
         public AccountController(IAccountService accountService, IServiceProvider provider)
         {
@@ -23,26 +24,37 @@ namespace FurnitureStore.Controllers
         [HttpPost("register")]
         [Consumes("application/json")]
         public async Task<ActionResult<UserResponse>> Register(RegisterRequest request)
-
-
         {
-
-            var userResponse = await _accountService.Register(new RegisterRequest
+            try
             {
-                UserName = request.UserName,
-                Password = request.Password,
-                Email = request.Email,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Gender = request.Gender,
-                PhoneNumber = request.PhoneNumber,
-                BirthDate = request.BirthDate,
-                UserType = request.UserType,
-                CityId = request.CityId
-            });
 
-            return Ok(userResponse);
+                var userResponse = await _accountService.Register(new RegisterRequest
+                {
+                    UserName = request.UserName,
+                    Password = request.Password,
+                    Email = request.Email,
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    Gender = request.Gender,
+                    PhoneNumber = request.PhoneNumber,
+                    BirthDate = request.BirthDate,
+                    UserType = request.UserType,
+                    CityId = request.CityId
+                });
+
+                if (userResponse == null)
+                {
+                    return BadRequest("Registracija nije uspela. Molimo proverite podatke.");
+                }
+
+                return Ok(userResponse);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Došlo je do greške na serveru. Molimo pokušajte ponovo kasnije.");
+            }
         }
+
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
