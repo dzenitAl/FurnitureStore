@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:furniturestore_mobile/models/product/product.dart';
 import 'package:furniturestore_mobile/models/gift_card/gift_card.dart';
+import 'package:furniturestore_mobile/providers/account_provider.dart';
+import 'package:furniturestore_mobile/providers/order_provider.dart';
+import 'package:furniturestore_mobile/screens/payment/payment_order.dart';
 import 'package:furniturestore_mobile/utils/utils.dart';
 import 'package:furniturestore_mobile/widgets/master_screen.dart';
+import 'package:provider/provider.dart';
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen({Key? key}) : super(key: key);
@@ -246,6 +250,39 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
+  Future<void> confirmOrder() async {
+    if (cartItems.isEmpty) {
+      _showSnackBar("Korpa je prazna. Dodajte proizvode pre potvrde!");
+      return;
+    }
+    var currentUser = await context.read<AccountProvider>().getCurrentUser();
+
+    final orderRequest = {
+      "orderDate": DateTime.now().toIso8601String(),
+      // "delivery": Delivery.HomeDelivery,
+      "totalPrice": totalPrice,
+      "customerId": currentUser.nameid
+    };
+
+    try {
+      final order = await OrderProvider().insert(orderRequest);
+
+      Order.clearOrder();
+      cartItems.clear();
+      _calculateTotalPrice();
+
+      _showSnackBar("Narudžba uspešno potvrđena!");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentScreen(order: order),
+        ),
+      );
+    } catch (e) {
+      _showSnackBar("Greška prilikom kreiranja narudžbe: $e");
+    }
+  }
+
   Widget _buildCartSummary() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +300,7 @@ class _OrderScreenState extends State<OrderScreen> {
         SizedBox(
           width: 200,
           child: ElevatedButton(
-            onPressed: _confirmOrder,
+            onPressed: confirmOrder,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF70BC69),
               foregroundColor: Colors.white,
@@ -272,12 +309,9 @@ class _OrderScreenState extends State<OrderScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
-              'Potvrdi narudžbu',
-              style: TextStyle(fontSize: 18),
-            ),
+            child: const Text("Potvrdi narudžbu"),
           ),
-        )
+        ),
       ],
     );
   }

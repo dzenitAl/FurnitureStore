@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:furniturestore_mobile/main.dart';
 import 'package:furniturestore_mobile/providers/account_provider.dart';
+import 'package:furniturestore_mobile/screens/account_profile/profile_edit_screen.dart';
 import 'package:furniturestore_mobile/utils/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:furniturestore_mobile/models/account/account.dart';
@@ -57,41 +58,11 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderSection(),
-            const SizedBox(height: 24),
             _buildProfileBox(context),
             const SizedBox(height: 24),
             _buildActions(context),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeaderSection() {
-    return Center(
-      child: Column(
-        children: [
-          const SizedBox(height: 12),
-          if (_currentUser?.fullName != null)
-            Text(
-              _currentUser!.fullName!,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1D3557),
-              ),
-            ),
-          const SizedBox(height: 8),
-          if (_currentUser?.role != null)
-            Text(
-              _currentUser!.role!,
-              style: const TextStyle(
-                fontSize: 22,
-                color: Color(0xFF738290),
-              ),
-            ),
-        ],
       ),
     );
   }
@@ -148,7 +119,15 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        EditAccountScreen(userData: _currentUser),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 75, 105, 146),
                 foregroundColor: Colors.white,

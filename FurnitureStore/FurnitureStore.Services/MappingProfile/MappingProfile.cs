@@ -23,12 +23,11 @@ namespace FurnitureStore.Services.MappingProfile
     {
         public MappingProfile()
         {
-            CreateMap<Database.Payment, Models.Payment.Payment>();
-            CreateMap<PaymentRequest, Database.Payment>();
             CreateMap<Database.CustomFurnitureReservation, CustomFurnitureReservation>();
             CreateMap<CustomeFurnitureReservationInsertRequest, Database.CustomFurnitureReservation>();
             CreateMap<CustomeFurnitureReservationUpdateRequest, Database.CustomFurnitureReservation>();
             CreateMap<Database.Order, Order>();
+            CreateMap<Order, Database.Order>();
             CreateMap<OrderInsertRequest, Database.Order>();
             CreateMap<OrderUpdateRequest, Database.Order>();
             CreateMap<Database.OrderItem, OrderItem>();
@@ -65,6 +64,8 @@ namespace FurnitureStore.Services.MappingProfile
             CreateMap<Database.WishList, WishList>();
             CreateMap<WishListRequest, Database.WishList>();
             CreateMap<Database.User, UserResponse>();
+            CreateMap<Database.Payment, Payment>();
+            CreateMap<PaymentRequest, Database.Payment>();
 
         }
     }

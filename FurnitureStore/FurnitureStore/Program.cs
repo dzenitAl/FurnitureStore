@@ -22,6 +22,7 @@ builder.Services.AddTransient<IReportService, ReportService>();
 builder.Services.AddTransient<IPromotionService, PromotionService>();
 builder.Services.AddTransient<ICustomFurnitureReservation, CustomFurnitureReservationService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
+builder.Services.AddTransient<IPaymentOrderService, PaymentOrderService>();
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<ICityService, CityService>();

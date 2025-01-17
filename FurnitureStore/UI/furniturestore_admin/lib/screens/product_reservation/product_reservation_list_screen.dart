@@ -45,6 +45,7 @@ class _ProductReservationListScreenState
         for (var customer in customerResult.result)
           if (customer.id != null) customer.id!: customer.fullName ?? ''
       };
+      print('API response: $reservationData');
 
       // Apply filter by customer name if provided
       if (filters != null &&
