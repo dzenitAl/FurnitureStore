@@ -38,3 +38,8 @@ flutter pub get
 flutter emulators --launch Pixel 2 API 35
 
 flutter run --dart-define=baseUrl=http://10.0.2.2:7015/api/
+
+
+Dummy Credit Card
+
+Card Number: 5555 5555 5555 4444
