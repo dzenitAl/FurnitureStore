@@ -157,7 +157,7 @@ namespace FurnitureStore.Configuration
         new City { Id = 1, Name = "Mostar", CreatedAt = DateTime.Parse("2024-12-12") },
         new City { Id = 2, Name = "Visoko", CreatedAt = DateTime.Parse("2024-12-12") },
         new City { Id = 3, Name = "Sarajevo", CreatedAt = DateTime.Parse("2024-12-12") },
-        new City { Id = 3, Name = "Zenica", CreatedAt = DateTime.Parse("2024-12-12") }
+        new City { Id = 4, Name = "Zenica", CreatedAt = DateTime.Parse("2024-12-12") }
     };
 
             SeedData(context, "Cities", cities);

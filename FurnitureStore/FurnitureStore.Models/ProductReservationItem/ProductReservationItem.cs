@@ -1,4 +1,9 @@
 ﻿
+using FurnitureStore.Models.ProductPicture;
+using FurnitureStore.Models.ProductReservation;
+using FurnitureStore.Models.Subcategory;
+using System.ComponentModel.DataAnnotations;
+
 namespace FurnitureStore.Models.ProductReservationItem
 {
     public class ProductReservationItem

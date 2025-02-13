@@ -30,6 +30,7 @@ namespace FurnitureStore.Services.Services
                     {
 
                         ProductId = product.Id,
+                        Product = product,
                         Quantity = 1
                     };
                     items.Add(productReservationItem);

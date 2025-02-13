@@ -1,4 +1,18 @@
+# version: '3.8'
+
 services:
+  rabbitMQ:
+    image: rabbitmq:3-management
+    container_name: 'rabbitmq_container'
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "8050:15672"
+      - "5672:5672"
+    networks: 
+      - furniturestore2024
+
   furniturestore-sql:
     image: mcr.microsoft.com/mssql/server:2017-latest
     restart: unless-stopped
@@ -20,12 +34,35 @@ services:
     environment:
       ConnectionStrings:DefaultConnection: "Server=furniturestore-sql,1433;Database=180020;User=sa;Password=QWElkj132!;ConnectRetryCount=0;TrustServerCertificate=True"
       ASPNETCORE_ENVIRONMENT: Development
+      RABBITMQ_HOST: rabbitMQ
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_VIRTUALHOST: /
     ports:
       - "7015:7015"
     networks:
       - furniturestore2024
     depends_on:
       - furniturestore-sql
+      - rabbitMQ
+
+  dodatni_api:
+    restart: unless-stopped
+    build:
+      context: ../FurnitureStoreDodatni/FurnitureStoreDodatni
+    environment:
+      - ConnectionStrings:DefaultConnection=Server=furniturestore-sql,1433;Database=180020;User=sa;Password=QWElkj132!;ConnectRetryCount=0;TrustServerCertificate=True
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RABBITMQ_HOST=rabbitMQ
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+      - RABBITMQ_VIRTUALHOST=/
+    ports:
+      - "7055:7055"
+    networks:
+      - furniturestore2024
+    depends_on:
+      - rabbitMQ
 
 networks:
   furniturestore2024:

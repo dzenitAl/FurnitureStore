@@ -9,6 +9,8 @@ import 'package:furniturestore_admin/screens/report/report_list_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/enums/reportType.dart';
+
 class ReportDetailScreen extends StatefulWidget {
   ReportModel? report;
 
@@ -162,8 +164,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.report == null
-            ? 'Dodaj novi izveštaj'
-            : 'Informacije o izveštaju'),
+            ? 'Dodaj novi izvestaj'
+            : 'Informacije o izvestaju'),
         actions: [
           if (widget.report == null) // Prikaz dugmeta samo kada je dodavanje
             IconButton(

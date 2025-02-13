@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:furniturestore_admin/components/DeleteModal.dart';
 import 'package:furniturestore_admin/models/enums/month.dart';
@@ -8,9 +9,13 @@ import 'package:furniturestore_admin/providers/account_provider.dart';
 import 'package:furniturestore_admin/screens/report/report_detail_screen.dart';
 import 'package:furniturestore_admin/widgets/master_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
-enum ReportType { Mjesecni, Godisnji }
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+
+import '../../models/enums/reportType.dart';
 
 class ReportListScreen extends StatefulWidget {
   const ReportListScreen({super.key});
@@ -110,6 +115,43 @@ class _ReportListScreenState extends State<ReportListScreen> {
   String _getMonthName(int? monthNumber) {
     if (monthNumber == null || monthNumber < 1 || monthNumber > 13) return '';
     return Month.values[monthNumber - 1].toString().split('.').last;
+  }
+
+  // Funkcija za generisanje PDF izvještaja za dati report
+  void _generatePDF(ReportModel report) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Izveštaj',
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              pw.Text(
+                  'Datum Generisanja: ${DateFormat('d.M.yyyy HH:mm:ss').format(report.generationDate ?? DateTime.now())}'),
+              pw.SizedBox(height: 10),
+              pw.Text('Sadržaj: ${report.content}'),
+              pw.SizedBox(height: 10),
+              pw.Text('Mesec: ${_getMonthName(report.month)}'),
+              pw.Text('Godina: ${report.year}'),
+              pw.Text(
+                  'Tip Izveštaja: ${_getReportTypeName(report.reportType)}'),
+            ],
+          );
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final file = File("${output.path}/izvestaj_${report.id}.pdf");
+    await file.writeAsBytes(await pdf.save());
+
+    await Printing.sharePdf(
+        bytes: await pdf.save(), filename: 'izvestaj_${report.id}.pdf');
   }
 
   @override
@@ -271,7 +313,8 @@ class _ReportListScreenState extends State<ReportListScreen> {
                           ),
                         ),
                       ),
-                      DataColumn(label: Text(""))
+                      DataColumn(label: Text("")),
+                      DataColumn(label: Text("PDF")),
                     ],
                     rows: result?.result.map((ReportModel report) {
                           var customerInfo =
@@ -335,6 +378,15 @@ class _ReportListScreenState extends State<ReportListScreen> {
                                   onDelete: () async {
                                     await _reportProvider.delete(report.id!);
                                     _loadData();
+                                  },
+                                ),
+                              ),
+                              DataCell(
+                                IconButton(
+                                  icon: Icon(Icons.picture_as_pdf,
+                                      color: Color(0xFF1D3557)),
+                                  onPressed: () {
+                                    _generatePDF(report);
                                   },
                                 ),
                               ),

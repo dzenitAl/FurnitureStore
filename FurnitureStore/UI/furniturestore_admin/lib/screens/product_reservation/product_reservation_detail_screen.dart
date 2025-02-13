@@ -138,14 +138,14 @@ class _ProductReservationDetailScreenState
                                 focusedDay: widget.reservation.reservationDate!,
                                 selectedDayPredicate: (day) => isSameDay(
                                     day, widget.reservation.reservationDate),
-                                headerStyle: HeaderStyle(
+                                headerStyle: const HeaderStyle(
                                   titleCentered: true,
                                   formatButtonVisible: false,
                                   leftChevronVisible: false,
                                   rightChevronVisible: false,
                                 ),
                                 calendarStyle: CalendarStyle(
-                                  selectedDecoration: BoxDecoration(
+                                  selectedDecoration: const BoxDecoration(
                                     color: Colors.blue,
                                     shape: BoxShape.circle,
                                   ),
@@ -209,7 +209,7 @@ class _ProductReservationDetailScreenState
       children: [
         Text(
           '$label:',
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
             color: Color(0xFF1D3557),
@@ -219,7 +219,7 @@ class _ProductReservationDetailScreenState
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               color: Color(0xFF2C5C7F),
             ),

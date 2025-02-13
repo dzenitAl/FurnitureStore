@@ -12,6 +12,7 @@ import 'package:furniturestore_admin/widgets/master_screen.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:http/http.dart' as http;
 
@@ -268,7 +269,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _imageFiles.isEmpty
-                        ? Text('No images selected.')
+                        ? Text('Trenutno nema izabranih slika')
                         : Expanded(
                             child: CarouselSlider(
                               options: CarouselOptions(
@@ -291,12 +292,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _pickImages,
-                      child: Text('Pick Images'),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _uploadImages,
-                      child: Text('Upload Images'),
+                      child: Text('Izaberi slike'),
                     ),
                   ],
                 ),
