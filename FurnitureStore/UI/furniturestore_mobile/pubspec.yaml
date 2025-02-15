@@ -42,7 +42,7 @@ dependencies:
   jwt_decoder: ^2.0.1
   intl: ^0.19.0
   flutter_form_builder: ^9.0.0
-  carousel_slider: ^4.2.0
+  carousel_slider: ^4.2.1
   flutter_credit_card: ^4.0.1
 
 
