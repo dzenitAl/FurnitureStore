@@ -15,17 +15,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace FurnitureStore.Services.Services
 {
     public class PaymentOrderService : BaseCRUDService<Models.Payment.Payment, Database.Payment,
     OrderSearchObject, PaymentRequest, PaymentRequest, long>, IPaymentOrderService
     {
-        private readonly AppDbContext _context;
-
         public PaymentOrderService(AppDbContext context, IMapper mapper) : base(context, mapper)
         {
-            _context = context;
         }
 
         public async Task<Models.Order.Order?> GetOrderById(long orderId)
@@ -43,10 +39,8 @@ namespace FurnitureStore.Services.Services
             return _mapper.Map<Models.Order.Order>(orderEntity);
         }
 
-
         public async Task<bool> Pay(PaymentOrder model)
         {
-
             try
             {
                 StripeConfiguration.ApiKey = "sk_test_51PXjj82Lmi8PKb51pFaHhOwalY8Z96iPU1L4q31ZJoyaa0XVuxgnX4W2mI9NOqTvLFvEv3tZJbPeLDLIiV3uBIzv00rh9GXmfs";
@@ -61,25 +55,40 @@ namespace FurnitureStore.Services.Services
                         Name = model.CardHolderName
                     }
                 };
-                ////var serviceToken = new Stripe.TokenService();
-                ////Token stripeToken = await serviceToken.CreateAsync(optionsToken);
+
                 var options = new ChargeCreateOptions
                 {
                     Amount = (model.TotalPrice * 100),
+
                     Currency = "bam",
                     Description = "Furniture store",
                     Source = "tok_mastercard"
                 };
                 var service = new ChargeService();
                 Charge charge = await service.CreateAsync(options);
-                if (charge.Paid)
+                return charge.Paid;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task SavePayment(PaymentRequest paymentRequest)
+        {
+            try
+            {
+                var payment = new Database.Payment
                 {
+                    Amount = paymentRequest.Amount,
+                    Notes = paymentRequest.Notes,
+                    PaymentDate = DateTime.Now,
+                    CustomerId = paymentRequest.CustomerId,
+                    OrderId = paymentRequest.OrderId
+                };
 
-                    return true;
-                }
-                else
-                    return false;
-
+                _context.Payments.Add(payment);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -88,21 +97,5 @@ namespace FurnitureStore.Services.Services
             }
         }
 
-        public async Task SavePayment(PaymentRequest paymentRequest)
-        {
-            var payment = new Database.Payment
-            {
-                Amount = paymentRequest.Amount,
-                Notes = paymentRequest.Notes,
-                PaymentDate = DateTime.Now,
-                CustomerId = paymentRequest.CustomerId,
-                OrderId = paymentRequest.OrderId
-            };
-
-            _context.Payments.Add(payment); 
-            await _context.SaveChangesAsync();
-        }
-
-     
     }
 }

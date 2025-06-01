@@ -1,4 +1,3 @@
-import 'package:furniturestore_mobile/models/product/product.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'product_reservation.g.dart';

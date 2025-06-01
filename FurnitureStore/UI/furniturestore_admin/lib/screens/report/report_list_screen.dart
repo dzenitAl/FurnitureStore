@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:furniturestore_admin/components/DeleteModal.dart';
 import 'package:furniturestore_admin/models/enums/month.dart';
 import 'package:furniturestore_admin/models/report/report.dart';
@@ -30,8 +31,8 @@ class _ReportListScreenState extends State<ReportListScreen> {
   SearchResult<ReportModel>? result;
   Map<String, Map<String, String>> adminMap = {};
   Map<String, Map<String, String>> customerMap = {};
-  TextEditingController _monthFilterController = TextEditingController();
-  TextEditingController _yearFilterController = TextEditingController();
+  final TextEditingController _monthFilterController = TextEditingController();
+  final TextEditingController _yearFilterController = TextEditingController();
 
   @override
   void didChangeDependencies() {
@@ -117,9 +118,11 @@ class _ReportListScreenState extends State<ReportListScreen> {
     return Month.values[monthNumber - 1].toString().split('.').last;
   }
 
-  // Funkcija za generisanje PDF izvještaja za dati report
-  void _generatePDF(ReportModel report) async {
+  Future<void> _generatePDF(ReportModel report) async {
     final pdf = pw.Document();
+
+    final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final ttf = pw.Font.ttf(fontData);
 
     pdf.addPage(
       pw.Page(
@@ -129,17 +132,20 @@ class _ReportListScreenState extends State<ReportListScreen> {
             children: [
               pw.Text('Izveštaj',
                   style: pw.TextStyle(
-                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                      fontSize: 24, fontWeight: pw.FontWeight.bold, font: ttf)),
               pw.SizedBox(height: 10),
               pw.Text(
-                  'Datum Generisanja: ${DateFormat('d.M.yyyy HH:mm:ss').format(report.generationDate ?? DateTime.now())}'),
+                  'Datum Generisanja: ${DateFormat('d.M.yyyy HH:mm:ss').format(report.generationDate ?? DateTime.now())}',
+                  style: pw.TextStyle(font: ttf)),
               pw.SizedBox(height: 10),
-              pw.Text('Sadržaj: ${report.content}'),
+              pw.Text('Sadržaj: ${report.content}',
+                  style: pw.TextStyle(font: ttf)),
               pw.SizedBox(height: 10),
-              pw.Text('Mesec: ${_getMonthName(report.month)}'),
-              pw.Text('Godina: ${report.year}'),
-              pw.Text(
-                  'Tip Izveštaja: ${_getReportTypeName(report.reportType)}'),
+              pw.Text('Mesec: ${_getMonthName(report.month)}',
+                  style: pw.TextStyle(font: ttf)),
+              pw.Text('Godina: ${report.year}', style: pw.TextStyle(font: ttf)),
+              pw.Text('Tip Izveštaja: ${_getReportTypeName(report.reportType)}',
+                  style: pw.TextStyle(font: ttf)),
             ],
           );
         },
@@ -157,9 +163,10 @@ class _ReportListScreenState extends State<ReportListScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreenWidget(
-      titleWidget: Text("Lista izveštaja", style: TextStyle(fontSize: 24)),
+      titleWidget:
+          const Text("Lista izveštaja", style: TextStyle(fontSize: 24)),
       child: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             const Text(
@@ -171,7 +178,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
                 fontFamily: 'Roboto',
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -187,10 +194,10 @@ class _ReportListScreenState extends State<ReportListScreen> {
                         borderSide: BorderSide(color: Color(0xFF1D3557)),
                       ),
                     ),
-                    style: TextStyle(color: Color(0xFF1D3557)),
+                    style: const TextStyle(color: Color(0xFF1D3557)),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
                     controller: _yearFilterController,
@@ -204,24 +211,24 @@ class _ReportListScreenState extends State<ReportListScreen> {
                         borderSide: BorderSide(color: Color(0xFF1D3557)),
                       ),
                     ),
-                    style: TextStyle(color: Color(0xFF1D3557)),
+                    style: const TextStyle(color: Color(0xFF1D3557)),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: _applyFilters,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Color(0xFFF4A258),
-                    padding:
-                        EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                    backgroundColor: const Color(0xFFF4A258),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 24.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: Text("Pretraga"),
+                  child: const Text("Pretraga"),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: () async {
                     Navigator.of(context).push(
@@ -234,18 +241,18 @@ class _ReportListScreenState extends State<ReportListScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Color(0xFF1D3557),
-                    padding:
-                        EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                    backgroundColor: const Color(0xFF1D3557),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 24.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: Text("Dodaj novi izveštaj"),
+                  child: const Text("Dodaj novi izveštaj"),
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
@@ -324,7 +331,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
                             cells: [
                               DataCell(Text(
                                 _formatDateTime(report.generationDate),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w500,
                                   color: Color(0xFF2C5C7F),
                                   fontFamily: 'Roboto',
@@ -383,7 +390,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
                               ),
                               DataCell(
                                 IconButton(
-                                  icon: Icon(Icons.picture_as_pdf,
+                                  icon: const Icon(Icons.picture_as_pdf,
                                       color: Color(0xFF1D3557)),
                                   onPressed: () {
                                     _generatePDF(report);
@@ -391,17 +398,6 @@ class _ReportListScreenState extends State<ReportListScreen> {
                                 ),
                               ),
                             ],
-                            onSelectChanged: (selected) {
-                              if (selected != null && selected) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => ReportDetailScreen(
-                                      report: report,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
                           );
                         }).toList() ??
                         [],

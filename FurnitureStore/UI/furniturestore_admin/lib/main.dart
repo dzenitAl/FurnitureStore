@@ -13,6 +13,7 @@ import 'package:furniturestore_admin/providers/subcategory_provider.dart';
 import 'package:furniturestore_admin/screens/product/product_list_screen.dart';
 import 'package:furniturestore_admin/utils/utils.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(MultiProvider(
@@ -44,6 +45,9 @@ class MyMaterialApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.indigo,
         ),
+        textTheme: GoogleFonts.robotoTextTheme(
+          Theme.of(context).textTheme,
+        ),
       ),
       home: LoginPage(),
     );
@@ -58,14 +62,14 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _accountProvider = context.read<AccountProvider>();
+    final accountProvider = context.read<AccountProvider>();
 
     return Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage("assets/images/background1.png"),
                   fit: BoxFit.cover,
@@ -142,7 +146,7 @@ class LoginPage extends StatelessWidget {
                                       'password': password,
                                     };
                                     var result =
-                                        await _accountProvider.login(body);
+                                        await accountProvider.login(body);
                                     Authorization.token =
                                         result['accessToken'].toString();
                                     Navigator.of(context).push(
@@ -166,14 +170,14 @@ class LoginPage extends StatelessWidget {
                                   }
                                 }
                               },
-                              child: const Text(
-                                "Prijavi se",
-                              ),
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.black,
                                 backgroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     vertical: 14.0, horizontal: 20.0),
+                              ),
+                              child: const Text(
+                                "Prijavi se",
                               ),
                             )
                           ],

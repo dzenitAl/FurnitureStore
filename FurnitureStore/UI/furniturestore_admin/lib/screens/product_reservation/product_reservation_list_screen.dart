@@ -23,9 +23,11 @@ class _ProductReservationListScreenState
   late AccountProvider _customerProvider;
   SearchResult<ProductReservationModel>? result;
   Map<String, String> customerNameMap = {};
-  TextEditingController _customerIdFilterController = TextEditingController();
-  TextEditingController _notesFilterController = TextEditingController();
-  TextEditingController _customerNameFilterController = TextEditingController();
+  final TextEditingController _customerIdFilterController =
+      TextEditingController();
+  final TextEditingController _notesFilterController = TextEditingController();
+  final TextEditingController _customerNameFilterController =
+      TextEditingController();
 
   @override
   void didChangeDependencies() {
@@ -40,6 +42,7 @@ class _ProductReservationListScreenState
       var reservationData =
           await _productReservationProvider.get(filter: filters);
       var customerResult = await _customerProvider.getAll();
+      print(' reservationData: $reservationData');
 
       customerNameMap = {
         for (var customer in customerResult.result)
@@ -47,7 +50,6 @@ class _ProductReservationListScreenState
       };
       print('API response: $reservationData');
 
-      // Apply filter by customer name if provided
       if (filters != null &&
           filters['customerName'] != null &&
           filters['customerName']!.isNotEmpty) {
@@ -84,15 +86,15 @@ class _ProductReservationListScreenState
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Reservation Approved'),
-            content: Text(
+            title: const Text('Reservation Approved'),
+            content: const Text(
                 'This reservation has already been approved and cannot be changed.'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -103,20 +105,20 @@ class _ProductReservationListScreenState
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Odobri rezervaciju'),
-            content: Text('Da li želiš odobriti ovu rezervaciju?'),
+            title: const Text('Odobri rezervaciju'),
+            content: const Text('Da li želiš odobriti ovu rezervaciju?'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(false);
                 },
-                child: Text('No'),
+                child: const Text('No'),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(true);
                 },
-                child: Text('Yes'),
+                child: const Text('Yes'),
               ),
             ],
           );
@@ -136,12 +138,12 @@ class _ProductReservationListScreenState
       if (reservation.id != null) {
         await _productReservationProvider.update(reservation.id!, reservation);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reservation approval status updated')),
+          const SnackBar(content: Text('Reservation approval status updated')),
         );
         _loadData();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reservation ID is null')),
+          const SnackBar(content: Text('Reservation ID is null')),
         );
       }
     } catch (e) {
@@ -162,12 +164,12 @@ class _ProductReservationListScreenState
   @override
   Widget build(BuildContext context) {
     return MasterScreenWidget(
-      titleWidget: Text("Lista rezervacija proizvoda"),
+      titleWidget: const Text("Lista rezervacija proizvoda"),
       child: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text(
+            const Text(
               "Lista rezervacija proizvoda",
               style: TextStyle(
                 fontSize: 26,
@@ -175,7 +177,7 @@ class _ProductReservationListScreenState
                 color: Color(0xFF1D3557),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -190,10 +192,10 @@ class _ProductReservationListScreenState
                         borderSide: BorderSide(color: Color(0xFFF4A258)),
                       ),
                     ),
-                    cursorColor: Color(0xFFF4A258),
+                    cursorColor: const Color(0xFFF4A258),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
                     controller: _customerNameFilterController,
@@ -206,27 +208,27 @@ class _ProductReservationListScreenState
                         borderSide: BorderSide(color: Color(0xFFF4A258)),
                       ),
                     ),
-                    cursorColor: Color(0xFFF4A258),
+                    cursorColor: const Color(0xFFF4A258),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: _applyFilters,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Color(0xFFF4A258),
-                    padding:
-                        EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                    backgroundColor: const Color(0xFFF4A258),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 24.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: Text("Pretraga"),
+                  child: const Text("Pretraga"),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
@@ -288,7 +290,7 @@ class _ProductReservationListScreenState
                       ),
                     ],
                     rows: result?.result
-                            ?.map((ProductReservationModel reservation) {
+                            .map((ProductReservationModel reservation) {
                           return DataRow(
                             onSelectChanged: (selected) {
                               if (selected == true) {
@@ -352,7 +354,7 @@ class _ProductReservationListScreenState
                                           fontFamily: 'Roboto',
                                         ),
                                       ),
-                                      SizedBox(width: 2),
+                                      const SizedBox(width: 2),
                                       Icon(
                                         reservation.isApproved ?? false
                                             ? Icons.check
@@ -367,13 +369,14 @@ class _ProductReservationListScreenState
                               ),
                               DataCell(
                                 reservation.isApproved ?? false
-                                    ? SizedBox.shrink()
+                                    ? const SizedBox.shrink()
                                     : ElevatedButton(
                                         onPressed: () =>
                                             _showApprovalDialog(reservation),
                                         style: ElevatedButton.styleFrom(
                                           foregroundColor: Colors.white,
-                                          backgroundColor: Color(0xFFF4A258),
+                                          backgroundColor:
+                                              const Color(0xFFF4A258),
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12.0, horizontal: 16.0),
                                           shape: RoundedRectangleBorder(
@@ -381,7 +384,7 @@ class _ProductReservationListScreenState
                                                 BorderRadius.circular(8.0),
                                           ),
                                         ),
-                                        child: Text('Odobri'),
+                                        child: const Text('Odobri'),
                                       ),
                               ),
                               DataCell(
@@ -403,7 +406,7 @@ class _ProductReservationListScreenState
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                   ),
-                                  child: Text('Detalji'),
+                                  child: const Text('Detalji'),
                                 ),
                               ),
                               DataCell(

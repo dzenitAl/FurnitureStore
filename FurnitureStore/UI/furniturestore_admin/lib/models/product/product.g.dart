@@ -16,6 +16,9 @@ ProductModel _$ProductModelFromJson(Map<String, dynamic> json) => ProductModel(
       isAvailableInStore: json['isAvailableInStore'] as bool?,
       isAvailableOnline: json['isAvailableOnline'] as bool?,
       subcategoryId: (json['subcategoryId'] as num?)?.toInt(),
+      pictures: (json['pictures'] as List<dynamic>?)
+          ?.map((e) => ProductPicturesModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$ProductModelToJson(ProductModel instance) =>
@@ -29,4 +32,5 @@ Map<String, dynamic> _$ProductModelToJson(ProductModel instance) =>
       'isAvailableInStore': instance.isAvailableInStore,
       'isAvailableOnline': instance.isAvailableOnline,
       'subcategoryId': instance.subcategoryId,
+      'pictures': instance.pictures,
     };

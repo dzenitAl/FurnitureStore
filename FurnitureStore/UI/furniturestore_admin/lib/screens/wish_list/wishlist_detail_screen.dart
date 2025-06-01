@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 class WishListDetailScreen extends StatefulWidget {
   final WishListModel? wishList;
 
-  const WishListDetailScreen({Key? key, this.wishList}) : super(key: key);
+  const WishListDetailScreen({super.key, this.wishList});
 
   @override
   _WishListDetailScreenState createState() => _WishListDetailScreenState();
@@ -50,17 +50,17 @@ class _WishListDetailScreenState extends State<WishListDetailScreen> {
         } else {
           await _wishListProvider.update(widget.wishList!.id, request);
         }
-        Navigator.of(context).pop();
+        Navigator.pop(context, true);
       } on Exception catch (e) {
         showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: Text("Error"),
+            title: const Text("Error"),
             content: Text(e.toString()),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("OK"),
+                child: const Text("OK"),
               ),
             ],
           ),
@@ -75,18 +75,17 @@ class _WishListDetailScreenState extends State<WishListDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(widget.wishList == null ? 'Add Wish List' : 'Edit Wish List'),
+        title: Text(widget.wishList == null ? 'Dodaj ' : 'Edit Wish List'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
               TextFormField(
                 controller: _customerIdController,
-                decoration: InputDecoration(labelText: 'Customer ID'),
+                decoration: const InputDecoration(labelText: 'Customer ID'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter Customer ID';
@@ -96,7 +95,7 @@ class _WishListDetailScreenState extends State<WishListDetailScreen> {
               ),
               TextFormField(
                 controller: _dateCreatedController,
-                decoration: InputDecoration(labelText: 'Date Created'),
+                decoration: const InputDecoration(labelText: 'Date Created'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter Date Created';
@@ -106,7 +105,7 @@ class _WishListDetailScreenState extends State<WishListDetailScreen> {
               ),
               ElevatedButton(
                 onPressed: _onSubmit,
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
             ],
           ),

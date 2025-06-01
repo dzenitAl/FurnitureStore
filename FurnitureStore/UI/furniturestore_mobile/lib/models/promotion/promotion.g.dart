@@ -18,6 +18,12 @@ PromotionModel _$PromotionModelFromJson(Map<String, dynamic> json) =>
       products: (json['products'] as List<dynamic>?)
           ?.map((e) => ProductModel.fromJson(e as Map<String, dynamic>))
           .toList(),
+      startDate: json['startDate'] == null
+          ? null
+          : DateTime.parse(json['startDate'] as String),
+      endDate: json['endDate'] == null
+          ? null
+          : DateTime.parse(json['endDate'] as String),
     );
 
 Map<String, dynamic> _$PromotionModelToJson(PromotionModel instance) =>
@@ -28,4 +34,6 @@ Map<String, dynamic> _$PromotionModelToJson(PromotionModel instance) =>
       'adminId': instance.adminId,
       'admin': instance.admin,
       'products': instance.products,
+      'startDate': instance.startDate?.toIso8601String(),
+      'endDate': instance.endDate?.toIso8601String(),
     };

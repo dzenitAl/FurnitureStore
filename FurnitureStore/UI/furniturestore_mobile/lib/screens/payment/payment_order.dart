@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:furniturestore_mobile/models/order/order.dart';
@@ -11,7 +9,7 @@ import 'package:provider/provider.dart';
 class PaymentScreen extends StatefulWidget {
   final OrderModel? order;
 
-  const PaymentScreen({Key? key, this.order}) : super(key: key);
+  const PaymentScreen({super.key, this.order});
 
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
@@ -29,7 +27,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Payment'),
+        title: const Text('Payment'),
       ),
       body: SafeArea(
         child: Column(
@@ -56,7 +54,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       cardHolderName: cardHolderName,
                       cvvCode: cvvCode,
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
@@ -70,7 +68,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           _showValidationErrorDialog(context);
                         }
                       },
-                      child: Text('Pay Now'),
+                      child: const Text('Pay Now'),
                     ),
                   ],
                 ),
@@ -98,18 +96,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
     try {
       List<String> parts = expiryDate.split('/');
 
-      var _orderProvider = context.read<OrderProvider>();
+      var orderProvider = context.read<OrderProvider>();
       var request = {
         'cardNumber': cardNumber,
         'month': parts[0],
         'year': parts[1],
         'cvc': cvvCode,
         'cardHolderName': cardHolderName,
-        'totalPrice': widget.order?.totalPrice ?? 0,
+        'totalPrice': widget.order?.totalPrice?.toInt() ?? 0,
       };
-      var result = await _orderProvider.pay(request);
+      var result = await orderProvider.pay(request);
       return result;
-    } on Exception catch (e) {
+    } on Exception {
       return false;
     }
   }
@@ -118,12 +116,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
     var orderProvider = context.read<OrderProvider>();
 
     try {
-      var currentUser = await context.read<AccountProvider>().getCurrentUser();
+      var currentUser = context.read<AccountProvider>().getCurrentUser();
       await orderProvider.save({
         'amount': widget.order?.totalPrice ?? 0,
         'notes': "Payment successful",
         'paymentDate': DateTime.now().toIso8601String(),
-        'customerId': currentUser,
+        'customerId': currentUser.nameid,
         'orderId': widget.order?.id ?? 0,
         'month': int.parse(expiryDate.split('/')[0]),
         'year': int.parse(expiryDate.split('/')[1]),
@@ -133,13 +131,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) => AlertDialog(
-          title: Text("Success"),
-          content: Text("Payment successfully saved."),
+          title: const Text("Success"),
+          content: const Text("Payment successfully saved."),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => HomePageScreen())),
-              child: Text("OK"),
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const HomePageScreen())),
+              child: const Text("OK"),
             ),
           ],
         ),
@@ -148,12 +146,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
       showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
-          title: Text("Error"),
+          title: const Text("Error"),
           content: Text(e.toString()),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         ),
@@ -165,12 +163,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: Text("Payment Error"),
-        content: Text("There was an error processing your payment."),
+        title: const Text("Payment Error"),
+        content: const Text("There was an error processing your payment."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("OK"),
+            child: const Text("OK"),
           ),
         ],
       ),
@@ -181,12 +179,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: Text("Validation Error"),
-        content: Text("Please ensure all fields are filled out correctly."),
+        title: const Text("Validation Error"),
+        content:
+            const Text("Please ensure all fields are filled out correctly."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("OK"),
+            child: const Text("OK"),
           ),
         ],
       ),

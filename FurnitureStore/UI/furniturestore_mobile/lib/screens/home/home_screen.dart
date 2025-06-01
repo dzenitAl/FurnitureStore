@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:furniturestore_mobile/models/promotion/promotion.dart';
 import 'package:furniturestore_mobile/providers/promotion_provider.dart';
 import 'package:furniturestore_mobile/screens/product/product_list_screen.dart';
+import 'package:furniturestore_mobile/screens/subcategory/subcategory_list_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:furniturestore_mobile/providers/category_provider.dart';
 import 'package:furniturestore_mobile/models/category/category.dart';
@@ -65,15 +66,14 @@ class _HomePageScreenState extends State<HomePageScreen> {
                 height: 120,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  children: categories != null
-                      ? categories!
-                          .map((category) => _buildCategoryCard(
-                              category.name ?? '', Icons.category))
-                          .toList()
-                      : [
-                          _buildCategoryCard(
-                              "Učitavanje...", Icons.hourglass_empty),
-                        ],
+                  children: (categories == null || categories!.isEmpty)
+                      ? [
+                          const Center(
+                              child: Text('Nema dostupnih kategorija')),
+                        ]
+                      : categories!
+                          .map((category) => _buildCategoryCard(category))
+                          .toList(),
                 ),
               ),
               const SizedBox(height: 20),
@@ -101,30 +101,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // const Text(
-              //   "Popularni proizvodi",
-              //   style: TextStyle(
-              //     fontSize: 18,
-              //     fontWeight: FontWeight.bold,
-              //   ),
-              // ),
-              // const SizedBox(height: 10),
-              // GridView.builder(
-              //   shrinkWrap: true,
-              //   physics: const NeverScrollableScrollPhysics(),
-              //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              //     crossAxisCount: 2,
-              //     crossAxisSpacing: 10,
-              //     mainAxisSpacing: 10,
-              //     childAspectRatio: 0.75,
-              //   ),
-              //   itemCount: 4,
-              //   itemBuilder: (context, index) {
-              //     return _buildPopularProductCard(
-              //         "Product $index", "\$${100 + index * 50}");
-              //   },
-              // ),
             ],
           ),
         ),
@@ -132,33 +108,45 @@ class _HomePageScreenState extends State<HomePageScreen> {
     );
   }
 
-  Widget _buildCategoryCard(String title, IconData icon) {
+  Widget _buildCategoryCard(CategoryModel category) {
     return Padding(
       padding: const EdgeInsets.only(right: 10.0),
-      child: Container(
-        width: 120,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF7F7F7),
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 1,
-              offset: const Offset(0, 3),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => SubcategoryListScreen(
+                category: category,
+              ),
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: const Color(0xFF1D3557)),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16),
-            ),
-          ],
+          );
+        },
+        child: Container(
+          width: 120,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F7F7),
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 1,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.category, size: 40, color: Color(0xFF1D3557)),
+              const SizedBox(height: 10),
+              Text(
+                category.name ?? '',
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -208,49 +196,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPopularProductCard(String title, String price) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              color: Colors.grey[300],
-              width: double.infinity,
-              child: const Icon(Icons.image, size: 50, color: Colors.grey),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              price,
-              style: const TextStyle(fontSize: 14, color: Colors.green),
-            ),
-          ),
-        ],
       ),
     );
   }

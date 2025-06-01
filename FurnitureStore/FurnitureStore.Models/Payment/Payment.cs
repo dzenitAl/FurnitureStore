@@ -19,7 +19,6 @@ namespace FurnitureStore.Models.Payment
         public Order.Order Order { get; set; }
         public long? ProductReservationId { get; set; }
         public ProductReservation.ProductReservation ProductReservation { get; set; }
-        public long? ReportId { get; set; }
-        public Report.Report Report { get; set; }
+   
     }
 }

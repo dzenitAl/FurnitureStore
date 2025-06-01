@@ -43,8 +43,15 @@ class OrderProvider extends BaseProvider<OrderModel> {
     var headers = createAuthorizationHeaders();
     var jsonRequest = jsonEncode(request);
     var response = await http!.post(uri, headers: headers, body: jsonRequest);
+
     if (isValidResponse(response)) {
-      var data = jsonDecode(response.body);
+      if (response.body != null && response.body.isNotEmpty) {
+        var data = jsonDecode(response.body);
+      } else {
+        print("Empty response body");
+      }
+    } else {
+      print("error $response");
     }
   }
 }

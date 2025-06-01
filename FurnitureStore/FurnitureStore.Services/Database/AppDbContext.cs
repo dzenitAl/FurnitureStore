@@ -20,6 +20,7 @@ namespace FurnitureStore.Services.Database
         public virtual DbSet<Order> Orders { get; set; }
         public virtual DbSet<OrderItem> OrderItems { get; set; }
         public virtual DbSet<WishList> WishLists { get; set; }
+
         public virtual DbSet<Payment> Payments { get; set; }
         public virtual DbSet<Report> Reports { get; set; }
         public virtual DbSet<ProductPicture> ProductPictures { get; set; }

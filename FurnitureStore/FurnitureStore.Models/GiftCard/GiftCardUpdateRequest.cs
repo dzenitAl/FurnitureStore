@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,8 @@ namespace FurnitureStore.Models.GiftCard
         public int Amount { get; set; }
         public DateTime ExpiryDate { get; set; }
         public bool IsActivated { get; set; }
+        public long? ImageId { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 
 }

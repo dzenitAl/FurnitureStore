@@ -9,7 +9,7 @@ enum Gender { Male, Female }
 enum UserTypes { All, Admin, Customer }
 
 class RegisterPage extends StatefulWidget {
-  RegisterPage({super.key});
+  const RegisterPage({super.key});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -50,7 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final _accountProvider = context.read<AccountProvider>();
+    final accountProvider = context.read<AccountProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -221,7 +221,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     );
 
                     try {
-                      await _accountProvider.register(newAccount.toJson());
+                      await accountProvider.register(newAccount.toJson());
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

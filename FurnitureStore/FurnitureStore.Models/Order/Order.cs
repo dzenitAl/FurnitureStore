@@ -12,5 +12,7 @@ namespace FurnitureStore.Models.Order
         public bool IsApproved { get; set; }
         public string CustomerId { get; set; }
         public User.User Customer { get; set; }
+        public List<OrderItem.OrderItem> OrderItems { get; set; } = new();
+
     }
 }

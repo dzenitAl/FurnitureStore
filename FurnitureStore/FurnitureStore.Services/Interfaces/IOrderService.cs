@@ -6,5 +6,7 @@ namespace FurnitureStore.Services.Interfaces
 {
     public interface IOrderService :ICRUDService<Order, OrderSearchObject, OrderInsertRequest, OrderUpdateRequest, long>
     {
+        Task<Order?> GetOrderWithItemsAsync(long id);
+
     }
 }

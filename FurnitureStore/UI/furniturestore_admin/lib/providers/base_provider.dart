@@ -25,21 +25,30 @@ abstract class BaseProvider<T> with ChangeNotifier {
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
-    var response = await http.get(uri, headers: headers);
-    if (isValidResponse(response)) {
-      var data = jsonDecode(response.body);
+    try {
+      var response = await http.get(uri, headers: headers);
+      if (isValidResponse(response)) {
+        var data = jsonDecode(response.body);
 
-      var result = SearchResult<T>();
+        var result = SearchResult<T>();
 
-      result.count = data['count'];
+        result.count = data['count'];
 
-      for (var item in data['result']) {
-        result.result.add(fromJson(item));
+        for (var item in data['result']) {
+          result.result.add(fromJson(item));
+        }
+
+        return result;
+      } else {
+        throw Exception("Unknown error");
       }
-
-      return result;
-    } else {
-      throw new Exception("Unknown error");
+    } catch (e) {
+      if (e is http.ClientException) {
+        throw Exception(
+            "Network connection error. Please check your internet connection.");
+      } else {
+        rethrow;
+      }
     }
   }
 
@@ -50,14 +59,23 @@ abstract class BaseProvider<T> with ChangeNotifier {
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
-    var jsonRequest = jsonEncode(request);
-    var response = await http.post(uri, headers: headers, body: jsonRequest);
+    try {
+      var jsonRequest = jsonEncode(request);
+      var response = await http.post(uri, headers: headers, body: jsonRequest);
 
-    if (isValidResponse(response)) {
-      var data = jsonDecode(response.body);
-      return fromJson(data);
-    } else {
-      throw new Exception("Unknown error");
+      if (isValidResponse(response)) {
+        var data = jsonDecode(response.body);
+        return fromJson(data);
+      } else {
+        throw Exception("Unknown error");
+      }
+    } catch (e) {
+      if (e is http.ClientException) {
+        throw Exception(
+            "Network connection error. Please check your internet connection.");
+      } else {
+        rethrow;
+      }
     }
   }
 
@@ -66,14 +84,23 @@ abstract class BaseProvider<T> with ChangeNotifier {
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
-    var jsonRequest = jsonEncode(request);
-    var response = await http.put(uri, headers: headers, body: jsonRequest);
+    try {
+      var jsonRequest = jsonEncode(request);
+      var response = await http.put(uri, headers: headers, body: jsonRequest);
 
-    if (isValidResponse(response)) {
-      var data = jsonDecode(response.body);
-      return fromJson(data);
-    } else {
-      throw new Exception("Unknown error");
+      if (isValidResponse(response)) {
+        var data = jsonDecode(response.body);
+        return fromJson(data);
+      } else {
+        throw Exception("Unknown error");
+      }
+    } catch (e) {
+      if (e is http.ClientException) {
+        throw Exception(
+            "Network connection error. Please check your internet connection.");
+      } else {
+        rethrow;
+      }
     }
   }
 
@@ -82,11 +109,43 @@ abstract class BaseProvider<T> with ChangeNotifier {
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
-    var response = await http.delete(uri, headers: headers);
+    try {
+      var response = await http.delete(uri, headers: headers);
 
-    if (isValidResponse(response)) {
-    } else {
-      throw new Exception("Failed to delete item");
+      if (!isValidResponse(response)) {
+        throw Exception("Failed to delete item");
+      }
+    } catch (e) {
+      if (e is http.ClientException) {
+        throw Exception(
+            "Network connection error. Please check your internet connection.");
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  Future<T> getById(int id) async {
+    var url = "$baseUrl$_endpoint/$id";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    try {
+      var response = await http.get(uri, headers: headers);
+
+      if (isValidResponse(response)) {
+        var data = jsonDecode(response.body);
+        return fromJson(data);
+      } else {
+        throw Exception("Unknown error");
+      }
+    } catch (e) {
+      if (e is http.ClientException) {
+        throw Exception(
+            "Network connection error. Please check your internet connection.");
+      } else {
+        rethrow;
+      }
     }
   }
 
@@ -95,13 +154,25 @@ abstract class BaseProvider<T> with ChangeNotifier {
   }
 
   bool isValidResponse(Response response) {
-    print("response ${response}");
+    print("response $response");
     if (response.statusCode < 299) {
       return true;
     } else if (response.statusCode == 401) {
-      throw new Exception("Unauthorized");
+      throw Exception("Unauthorized");
+    } else if (response.statusCode == 404) {
+      throw Exception("Requested resource not found");
+    } else if (response.statusCode == 500) {
+      throw Exception("Server error occurred. Please try again later");
     } else {
-      throw new Exception("Something bad happened please try again");
+      try {
+        var errorData = jsonDecode(response.body);
+        if (errorData != null && errorData['message'] != null) {
+          throw Exception(errorData['message']);
+        }
+      } catch (_) {
+        // JSON parsing failed, just use status code
+      }
+      throw Exception("Error ${response.statusCode}: Something went wrong");
     }
   }
 
@@ -131,7 +202,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
         }
         query += '$prefix$key=$encoded';
       } else if (value is DateTime) {
-        query += '$prefix$key=${(value as DateTime).toIso8601String()}';
+        query += '$prefix$key=${(value).toIso8601String()}';
       } else if (value is List || value is Map) {
         if (value is List) value = value.asMap();
         value.forEach((k, v) {

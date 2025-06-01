@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 class GiftCardDetailScreen extends StatefulWidget {
   final GiftCardModel? giftCard;
 
-  const GiftCardDetailScreen({Key? key, this.giftCard}) : super(key: key);
+  const GiftCardDetailScreen({super.key, this.giftCard});
 
   @override
   _GiftCardDetailScreenState createState() => _GiftCardDetailScreenState();
@@ -62,7 +62,7 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
         child: Column(
           children: [
             if (_isExpired)
-              Text(
+              const Text(
                 'Poklon kartica je istekla',
                 style: TextStyle(
                   color: Colors.red,
@@ -152,10 +152,16 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
                                   Expanded(
                                     child: Text(
                                       _expiryDate == null
-                                          ? 'Nije izabran datum!'
+                                          ? 'Datum nije izabran!'
                                           : 'Datum isteka: ${_expiryDate!.toLocal().toString().split(' ')[0]}',
-                                      style:
-                                          Theme.of(context).textTheme.bodyLarge,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: _expiryDate == null
+                                                ? Colors.red
+                                                : Colors.black,
+                                          ),
                                     ),
                                   ),
                                 ],
@@ -176,7 +182,7 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
                                   ),
                                 ),
                               if (_isExpired)
-                                SizedBox(
+                                const SizedBox(
                                   height: 300,
                                   child: Center(
                                     child: Text(
@@ -194,17 +200,18 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
                                 visible: !_isExpired,
                                 child: Center(
                                   child: ElevatedButton(
-                                    onPressed: _onSubmit,
+                                    onPressed:
+                                        _expiryDate != null ? _onSubmit : null,
                                     style: ElevatedButton.styleFrom(
                                       foregroundColor: Colors.white,
-                                      backgroundColor: Color(0xFFF4A258),
-                                      padding: EdgeInsets.symmetric(
+                                      backgroundColor: const Color(0xFFF4A258),
+                                      padding: const EdgeInsets.symmetric(
                                           vertical: 16.0, horizontal: 32.0),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
-                                    child: Text('Sačuvaj',
+                                    child: const Text('Sačuvaj',
                                         style: TextStyle(fontSize: 16)),
                                   ),
                                 ),
@@ -254,7 +261,13 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
       final formData = _formKey.currentState?.value;
       print('Form Data: $formData');
 
-      var request = new Map.from(_formKey.currentState!.value);
+      var request = Map.from(_formKey.currentState!.value);
+
+      if (_expiryDate != null) {
+        request['expiryDate'] = _expiryDate!.toIso8601String();
+      }
+
+      print('Final Request: $request');
 
       try {
         if (widget.giftCard == null) {
@@ -263,8 +276,7 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
           await _giftCardProvider.update(widget.giftCard!.id!, request);
         }
 
-        Navigator.pop(
-            context, true); // Send back a true value to indicate success
+        Navigator.pop(context, true);
       } on Exception catch (e) {
         showDialog(
           context: context,
@@ -273,8 +285,9 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
             content: Text(e.toString()),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("OK")),
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
             ],
           ),
         );

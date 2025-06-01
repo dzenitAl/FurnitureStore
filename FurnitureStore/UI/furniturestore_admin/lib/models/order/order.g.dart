@@ -15,6 +15,9 @@ OrderModel _$OrderModelFromJson(Map<String, dynamic> json) => OrderModel(
       totalPrice: (json['totalPrice'] as num?)?.toDouble(),
       isApproved: json['isApproved'] as bool?,
       customerId: json['customerId'] as String?,
+      orderItems: (json['orderItems'] as List<dynamic>?)
+          ?.map((e) => OrderItemModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$OrderModelToJson(OrderModel instance) =>
@@ -25,4 +28,5 @@ Map<String, dynamic> _$OrderModelToJson(OrderModel instance) =>
       'totalPrice': instance.totalPrice,
       'isApproved': instance.isApproved,
       'customerId': instance.customerId,
+      'orderItems': instance.orderItems,
     };

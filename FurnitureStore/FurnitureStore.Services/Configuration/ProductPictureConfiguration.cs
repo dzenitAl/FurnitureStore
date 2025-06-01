@@ -9,8 +9,14 @@ namespace FurnitureStore.Services.Configuration
         public void Configure(EntityTypeBuilder<ProductPicture> builder)
         {
             builder.Property(u => u.Id).ValueGeneratedOnAdd();
-            builder.HasOne(p => p.Product).WithMany(c => c.ProductPictures).OnDelete(DeleteBehavior.NoAction);
-
+            
+            builder.Property(p => p.ProductId).IsRequired(false);
+            
+            builder.HasOne(p => p.Product)
+                .WithMany(c => c.ProductPictures)
+                .HasForeignKey(p => p.ProductId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
         }
     }
 }

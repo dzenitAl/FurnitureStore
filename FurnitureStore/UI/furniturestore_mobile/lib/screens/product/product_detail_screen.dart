@@ -8,13 +8,8 @@ import 'package:furniturestore_mobile/widgets/master_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final ProductModel product;
-  final List<File> imageFiles;
 
-  const ProductDetailScreen({
-    super.key,
-    required this.product,
-    required this.imageFiles,
-  });
+  const ProductDetailScreen({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -42,41 +37,149 @@ class ProductDetailScreen extends StatelessWidget {
   }
 
   Widget _buildImageCarousel() {
-    return imageFiles.isNotEmpty
-        ? Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.grey[200],
-            ),
-            child: CarouselSlider(
-              options: CarouselOptions(
-                height: 250,
-                viewportFraction: 1.0,
-                enableInfiniteScroll: false,
-                autoPlay: true,
-              ),
-              items: imageFiles.map((imageFile) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    imageFile,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
+    print('Pictures count: ${product.productPictures?.length}');
+
+    if (product.productPictures == null || product.productPictures!.isEmpty) {
+      return Container(
+        height: 250,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.grey[200],
+        ),
+        child: const Center(
+          child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey[200],
+      ),
+      child: CarouselSlider(
+        options: CarouselOptions(
+          height: 250,
+          viewportFraction: 1.0,
+          enableInfiniteScroll: false,
+          autoPlay: true,
+        ),
+        items:
+            product.productPictures!.map((picture) {
+              print('Processing image:');
+              print('  ID: ${picture.id}');
+              print('  ImagePath: ${picture.imagePath}');
+
+              const baseUrlWithoutApi = 'http://10.0.2.2:7015';
+              final directImageUrl =
+                  '$baseUrlWithoutApi/api/ProductPicture/direct-image/${picture.id}';
+              final pathBasedUrl = '$baseUrlWithoutApi${picture.imagePath}';
+
+              print('  Direct URL: $directImageUrl');
+              print('  Path URL: $pathBasedUrl');
+
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: const Color(0xFFE0E0E0),
+                  ),
+                  child:
+                      picture.imagePath != null
+                          ? _buildImageWithFallback(
+                            directImageUrl,
+                            pathBasedUrl,
+                            picture,
+                          )
+                          : const Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          ),
+                ),
+              );
+            }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildImageWithFallback(
+    String directUrl,
+    String pathUrl,
+    dynamic picture,
+  ) {
+    return Image.network(
+      directUrl,
+      fit: BoxFit.cover,
+      headers: {'Authorization': 'Bearer ${Authorization.token}'},
+      errorBuilder: (context, error, stackTrace) {
+        print('Direct URL failed: $error');
+        print('Trying path-based URL: $pathUrl');
+
+        return Image.network(
+          pathUrl,
+          fit: BoxFit.cover,
+          headers: {'Authorization': 'Bearer ${Authorization.token}'},
+          errorBuilder: (context, error2, stackTrace2) {
+            print('Path URL also failed: $error2');
+
+            return Image.network(
+              pathUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error3, stackTrace3) {
+                print('Path URL without auth failed: $error3');
+
+                return Container(
+                  color: Colors.red[100],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 40,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Failed to load image\nID: ${picture.id}\nPath: ${picture.imagePath}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    ],
                   ),
                 );
-              }).toList(),
-            ),
-          )
-        : const Center(child: Text('No images available'));
+              },
+            );
+          },
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) {
+              print('Path URL loaded successfully!');
+              return child;
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          print('Direct URL loaded successfully!');
+          return child;
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
   }
 
   Widget _buildProductInfo() {
     return Card(
       margin: const EdgeInsets.only(top: 16),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -102,18 +205,12 @@ class ProductDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Opis: ${product.description}',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF424530),
-              ),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF424530)),
             ),
             const SizedBox(height: 8),
             Text(
               'Dimenzije: ${product.dimensions}',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF424530),
-              ),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF424530)),
             ),
             const SizedBox(height: 12),
             Row(
@@ -236,7 +333,7 @@ class ProductDetailScreen extends StatelessWidget {
           onPressed: () {
             if (product.id != null) {
               ProductReservation.addProductToReservation(product);
-              _showSnackBar(context, 'Proizvod rezervisan');
+              _showSnackBar(context, 'Proizvod dodan u listu za rezervaciju');
             } else {
               _showSnackBar(context, 'Proizvod nema validan ID');
             }
@@ -330,18 +427,12 @@ class ProductDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             product.name ?? '',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             overflow: TextOverflow.ellipsis,
           ),
           Text(
             '${product.price} KM',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF70BC69),
-            ),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF70BC69)),
           ),
         ],
       ),
@@ -349,8 +440,8 @@ class ProductDetailScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

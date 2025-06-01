@@ -96,11 +96,21 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
               offset: const Offset(0, 3),
             ),
           ],
+          border: Border.all(
+            color: Color.fromARGB(255, 211, 211, 213),
+            width: 1,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.category, size: 50, color: Color(0xFF1D3557)),
+            // const Icon(Icons.category, size: 50, color: Color(0xFF1D3557)),
+            Image.asset(
+              'assets/images/livingRoom.png',
+              width: 160,
+              height: 120,
+              fit: BoxFit.cover,
+            ),
             const SizedBox(height: 10),
             Text(
               category.name ?? 'N/A',

@@ -27,7 +27,7 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
     _loadSubcategories();
   }
 
-  Future<void> _loadSubcategories({Map<String, String>? filters}) async {
+  Future<void> _loadSubcategories() async {
     try {
       var allSubcategories = await _subcategoryProvider.get("");
       var resultAll = allSubcategories.result;
@@ -106,12 +106,23 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
               offset: const Offset(0, 3),
             ),
           ],
+          border: Border.all(
+            color: Color.fromARGB(255, 211, 211, 213),
+            width: 1,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.category_outlined,
-                size: 50, color: Color(0xFF1D3557)),
+            // const Icon(Icons.category_outlined,
+            //    size: 50, color: Color(0xFF1D3557)),
+            Image.asset(
+              'assets/images/bedroom.png',
+              width: 160,
+              height: 120,
+              fit: BoxFit.cover,
+            ),
+
             const SizedBox(height: 10),
             Text(
               subcategory.name ?? 'N/A',

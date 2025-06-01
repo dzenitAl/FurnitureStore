@@ -12,6 +12,8 @@ class PromotionModel {
   String? adminId;
   AccountModel? admin;
   List<ProductModel>? products;
+  DateTime? startDate;
+  DateTime? endDate;
 
   PromotionModel({
     this.id,
@@ -20,6 +22,8 @@ class PromotionModel {
     this.adminId,
     this.admin,
     this.products,
+    this.startDate,
+    this.endDate,
   });
 
   factory PromotionModel.fromJson(Map<String, dynamic> json) =>

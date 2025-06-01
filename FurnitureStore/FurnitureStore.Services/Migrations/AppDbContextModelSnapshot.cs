@@ -371,7 +371,6 @@ namespace FurnitureStore.Services.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<long?>("ReportId")
-                        .IsRequired()
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -462,6 +461,13 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<string>("CreatedById")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long>("EntityId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -472,7 +478,7 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ProductId")
+                    b.Property<long?>("ProductId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -592,6 +598,9 @@ namespace FurnitureStore.Services.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Heading")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -601,6 +610,9 @@ namespace FurnitureStore.Services.Migrations
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -952,17 +964,13 @@ namespace FurnitureStore.Services.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("FurnitureStore.Services.Database.Report", "Report")
+                    b.HasOne("FurnitureStore.Services.Database.Report", null)
                         .WithMany("Payments")
-                        .HasForeignKey("ReportId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("ReportId");
 
                     b.Navigation("Customer");
 
                     b.Navigation("Order");
-
-                    b.Navigation("Report");
                 });
 
             modelBuilder.Entity("FurnitureStore.Services.Database.Product", b =>
@@ -986,8 +994,7 @@ namespace FurnitureStore.Services.Migrations
                     b.HasOne("FurnitureStore.Services.Database.Product", "Product")
                         .WithMany("ProductPictures")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Product");
                 });

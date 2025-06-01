@@ -27,7 +27,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
 
   Future<void> _loadCurrentUserId() async {
     try {
-      final currentUser = await _accountProvider.getCurrentUser();
+      final currentUser = _accountProvider.getCurrentUser();
       print("USER:: ${currentUser.nameid}");
       setState(() {
         _currentUserId = currentUser.nameid;
@@ -72,7 +72,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
       width: MediaQuery.of(context).size.width,
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFffefcd),
+        color: const Color(0xFFF0F4EF),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -93,20 +93,52 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
               color: Color(0xFF1D3557),
             ),
           ),
-          const SizedBox(height: 10),
-          Text('Ime: ${_currentUser?.firstName ?? 'N/A'}',
-              style: const TextStyle(fontSize: 18)),
-          Text('Prezime: ${_currentUser?.lastName ?? 'N/A'}',
-              style: const TextStyle(fontSize: 18)),
-          Text('Email: ${_currentUser?.email}',
-              style: const TextStyle(fontSize: 18)),
-          Text('Telefon: ${_currentUser?.phoneNumber}',
-              style: const TextStyle(fontSize: 18)),
-          Text(
-            'Datum rođenja: ${_currentUser?.birthDate != null ? DateFormat.yMMMd().format(_currentUser!.birthDate!) : 'N/A'}',
-            style: const TextStyle(fontSize: 18),
+          const SizedBox(height: 16),
+          _buildInfoRow(Icons.person, 'Ime', _currentUser?.firstName ?? 'N/A'),
+          _buildInfoRow(
+              Icons.person, 'Prezime', _currentUser?.lastName ?? 'N/A'),
+          _buildInfoRow(Icons.email, 'Email', _currentUser?.email ?? 'N/A'),
+          _buildInfoRow(
+              Icons.phone, 'Telefon', _currentUser?.phoneNumber ?? 'N/A'),
+          _buildInfoRow(
+            Icons.cake,
+            'Datum rođenja',
+            _currentUser?.birthDate != null
+                ? DateFormat.yMMMd().format(_currentUser!.birthDate!)
+                : 'N/A',
           ),
-          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Color(0xFF1D3557)),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1D3557),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -129,12 +161,15 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 75, 105, 146),
+                backgroundColor: const Color(0xFF517CA8),
                 foregroundColor: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 5,
+                shadowColor: Colors.grey.withOpacity(0.4),
               ),
               child: const Text(
                 'Uredi podatke',
@@ -155,12 +190,15 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1D3557),
+                backgroundColor: const Color(0xFF3D5A80),
                 foregroundColor: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 5,
+                shadowColor: Colors.grey.withOpacity(0.4),
               ),
               child: const Text(
                 'Odjavi se',

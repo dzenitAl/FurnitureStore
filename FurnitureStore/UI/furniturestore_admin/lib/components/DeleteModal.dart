@@ -6,11 +6,11 @@ class DeleteModal extends StatelessWidget {
   final Future<void> Function() onDelete;
 
   const DeleteModal({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

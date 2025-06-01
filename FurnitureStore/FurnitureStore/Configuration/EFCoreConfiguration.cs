@@ -2,6 +2,8 @@
 using FurnitureStore.Services.Database;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
+using System.Text;
 
 namespace FurnitureStore.Configuration
 {
@@ -14,6 +16,9 @@ namespace FurnitureStore.Configuration
                 b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName))
             );
         }
+
+
+
         public static void SeedData(this IApplicationBuilder app)
         {
             using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
@@ -109,10 +114,10 @@ namespace FurnitureStore.Configuration
                 //}
 
 
-                //if (!context.ProductPictures.Any())
-                //{
-                //    SeedProductPictures(context);
-                //}
+                if (!context.ProductPictures.Any())
+                {
+                    SeedProductPictures(context);
+                }
 
 
             }
@@ -120,480 +125,382 @@ namespace FurnitureStore.Configuration
         }
 
 
-        private static void SeedData<T>(AppDbContext context, string tableName, List<T> data) where T : class
-        {
-            using (var transaction = context.Database.BeginTransaction())
-            {
-                try
-                {
-                    var dbSet = context.Set<T>();
-                    var existingData = dbSet.AsNoTracking().ToList();
-                    var newData = data.Where(d => !existingData.Contains(d)).ToList();
-
-                    if (newData.Any())
-                    {
-                        context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT {tableName} ON;");
-
-                        dbSet.AddRange(newData);
-                        context.SaveChanges();
-
-                        context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT {tableName} OFF;");
-                    }
-
-                    transaction.Commit();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            }
-        }
 
         private static void SeedCities(AppDbContext context)
         {
-            var cities = new List<City>
-    {
-        new City { Id = 1, Name = "Mostar", CreatedAt = DateTime.Parse("2024-12-12") },
-        new City { Id = 2, Name = "Visoko", CreatedAt = DateTime.Parse("2024-12-12") },
-        new City { Id = 3, Name = "Sarajevo", CreatedAt = DateTime.Parse("2024-12-12") },
-        new City { Id = 4, Name = "Zenica", CreatedAt = DateTime.Parse("2024-12-12") }
-    };
+            var sqlCommand = @"
+    SET IDENTITY_INSERT Cities ON;
 
-            SeedData(context, "Cities", cities);
+    INSERT INTO Cities (Id, Name, CreatedAt)
+    VALUES
+    (1, N'Mostar', CAST(N'2024-12-12' AS DateTime2)),
+    (2, N'Visoko', CAST(N'2024-12-12' AS DateTime2)),
+    (3, N'Sarajevo', CAST(N'2024-12-12' AS DateTime2)),
+    (4, N'Zenica', CAST(N'2024-12-12' AS DateTime2));
+
+    SET IDENTITY_INSERT Cities OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
         private static void SeedRoles(AppDbContext context)
         {
-            var roles = new List<Role>
-    {
-        new Role { Id = "admin", Name = Roles.Admin },
-        new Role { Id = "customer", Name = Roles.Customer }
-    };
+            var sqlCommand = @"
+    SET IDENTITY_INSERT Roles ON;
 
-            SeedData(context, "Roles", roles);
+    INSERT INTO Roles (Id, Name)
+    VALUES
+    (N'admin', N'Admin'),
+    (N'customer', N'Customer');
+
+    SET IDENTITY_INSERT Roles OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
-        private static void SeedUsers(AppDbContext context, IServiceScope serviceScope)
+        private static void SeedUsers(AppDbContext context, IServiceScope scope)
         {
-            var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var userManager = scope.ServiceProvider.GetService<UserManager<User>>();
 
-            if (!context.Users.Any(u => u.Username == "admin"))
+            if (userManager == null)
+                return;
+
+            var admin = new User
             {
-                var admin = new User
-                {
-                    Id = "ff697def-9c3d-4b5a-84e2-e0ff755e9bc0",
-                    Username = "admin",
-                    Email = "admin@example.com",
-                    FirstName = "Admin",
-                    LastName = "User",
-                    BirthDate = DateTime.Parse("1999-12-12"),
-                    Gender = Gender.Male,
-                    PhoneNumber = "062245878",
-                    CityId = 1,
-                    CreatedAt = DateTime.Parse("2024-12-12"),
-                    CreatedById = null,
-                    EmailConfirmed = true
-                };
+                Id = "ff697def-9c3d-4b5a-84e2-e0ff755e9bc0",
+                Username = "admin",
+                Email = "admin@example.com",
+                FirstName = "Admin",
+                LastName = "User",
+                BirthDate = DateTime.Parse("1999-12-12"),
+                Gender = Gender.Male,
+                PhoneNumber = "062245878",
+                EmailConfirmed = true,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                CreatedById = null,
+                CreatedAt = DateTime.Now,
+                CityId = 1
+            };
 
+            var existingAdmin = userManager.FindByNameAsync(admin.Username).Result;
+            if (existingAdmin == null)
+            {
                 var result = userManager.CreateAsync(admin, "Admin123!").Result;
                 if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(admin, Roles.Admin).Wait();
-                }
+                    userManager.AddToRoleAsync(admin, "Admin").Wait();
             }
 
-            if (!context.Users.Any(u => u.Username == "customer"))
+            var customer = new User
             {
-                var customer = new User
-                {
-                    Id = "8b519724-b111-42d5-a7b5-de06b7dbbbb3",
-                    Username = "customer",
-                    Email = "customer@example.com",
-                    FirstName = "Customer",
-                    LastName = "User",
-                    BirthDate = DateTime.Parse("1995-05-05"),
-                    Gender = Gender.Female,
-                    PhoneNumber = "061985456",
-                    CityId = 1,
-                    CreatedAt = DateTime.Parse("2024-12-12"),
-                    CreatedById = null,
-                    EmailConfirmed = true
-                };
+                Id = "8b519724-b111-42d5-a7b5-de06b7dbbbb3",
+                Username = "customer",
+                Email = "customer@example.com",
+                FirstName = "Customer",
+                LastName = "User",
+                BirthDate = DateTime.Parse("1995-05-05"),
+                Gender = Gender.Female,
+                PhoneNumber = "061985456",
+                EmailConfirmed = true,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                CreatedById = null,
+                CreatedAt = DateTime.Now,
+                CityId = 1
+            };
 
+            var existingCustomer = userManager.FindByNameAsync(customer.Username).Result;
+            if (existingCustomer == null)
+            {
                 var result = userManager.CreateAsync(customer, "Customer123!").Result;
                 if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(customer, Roles.Customer).Wait();
-                }
+                    userManager.AddToRoleAsync(customer, "Customer").Wait();
             }
         }
 
         private static void SeedCategories(AppDbContext context)
         {
-            var categories = new List<Category>
-    {
-        new Category { Id = 1, Name = "Dnevni boravak", Description = "Kategorija za namještaj namijenjen dnevnim boravcima", CreatedAt = DateTime.Parse("2024-12-10") },
-        new Category { Id = 2, Name = "Spavaća soba", Description = "Kategorija za namještaj namijenjen spavaćim sobama", CreatedAt = DateTime.Parse("2024-12-10") },
-        new Category { Id = 3, Name = "Kancelarijski namještaj", Description = "Kategorija za kancelarijski namještaj", CreatedAt = DateTime.Parse("2024-12-10") }
-    };
+            var sqlCommand = @"
+        SET IDENTITY_INSERT Categories ON;
 
-            SeedData(context, "Categories", categories);
+        INSERT INTO Categories (Id, Name, Description, CreatedAt)
+        VALUES
+        (1, N'Dnevni boravak', N'Kategorija za namještaj namijenjen dnevnim boravcima', CAST(N'2024-12-10' AS DateTime2)),
+        (2, N'Spavaća soba', N'Kategorija za namještaj namijenjen spavaćim sobama', CAST(N'2024-12-10' AS DateTime2)),
+        (3, N'Kancelarijski namještaj', N'Kategorija za kancelarijski namještaj', CAST(N'2024-12-10' AS DateTime2));
+
+        SET IDENTITY_INSERT Categories OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
         private static void SeedSubcategories(AppDbContext context)
         {
-            var subcategories = new List<Subcategory>
-    {
-        new Subcategory { Id = 1, Name = "Sofe", CategoryId = 1, CreatedAt = DateTime.Parse("2024-12-10") },
-        new Subcategory { Id = 2, Name = "Klub stolovi", CategoryId = 1, CreatedAt = DateTime.Parse("2024-12-10") },
-        new Subcategory { Id = 3, Name = "Kreveti", CategoryId = 2, CreatedAt = DateTime.Parse("2024-12-10") },
-        new Subcategory { Id = 4, Name = "Ormari", CategoryId = 2, CreatedAt = DateTime.Parse("2024-12-10") },
-        new Subcategory { Id = 5, Name = "Radni stolovi", CategoryId = 3, CreatedAt = DateTime.Parse("2024-12-10") },
-        new Subcategory { Id = 6, Name = "Kancelarijske stolice", CategoryId = 3, CreatedAt = DateTime.Parse("2024-12-10") }
-    };
+            var sqlCommand = @"
+        SET IDENTITY_INSERT Subcategories ON;
 
-            SeedData(context, "Subcategories", subcategories);
+        INSERT INTO Subcategories (Id, Name, CategoryId, CreatedAt)
+        VALUES
+        (1, N'Sofe', 1, CAST(N'2024-12-10' AS DateTime2)),
+        (2, N'Klub stolovi', 1, CAST(N'2024-12-10' AS DateTime2)),
+        (3, N'Kreveti', 2, CAST(N'2024-12-10' AS DateTime2)),
+        (4, N'Ormari', 2, CAST(N'2024-12-10' AS DateTime2)),
+        (5, N'Radni stolovi', 3, CAST(N'2024-12-10' AS DateTime2)),
+        (6, N'Kancelarijske stolice', 3, CAST(N'2024-12-10' AS DateTime2));
+
+        SET IDENTITY_INSERT Subcategories OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
+
 
         private static void SeedProducts(AppDbContext context)
         {
-            if (!context.Products.Any())
-            {
-                var subcategories = context.Subcategories.ToList();
+            var sqlCommand = @"
+        SET IDENTITY_INSERT Products ON;
 
-                var products = new List<Product>
-        {
-            new Product
-            {
-                Name = "Sofa Model X",
-                Description = "Elegantna sofa za dnevni boravak.",
-                Price = 900,
-                Dimensions = "200x90x80 cm",
-                IsAvailableInStore = true,
-                IsAvailableOnline = true,
-                SubcategoryId = subcategories.FirstOrDefault(s => s.Name == "Sofe")?.Id ?? 1,
-                CreatedAt = DateTime.UtcNow,
-                Barcode = "123456789012",
-            },
-            new Product
-            {
-                Name = "Krevet Model Y",
-                Description = "Udoban krevet za spavaću sobu.",
-                Price = 799.99,
-                Dimensions = "180x200 cm",
-                IsAvailableInStore = true,
-                IsAvailableOnline = true,
-                SubcategoryId = subcategories.FirstOrDefault(s => s.Name == "Kreveti")?.Id ?? 1,
-                CreatedAt = DateTime.UtcNow,
-                Barcode = "234567890123",
-            }
-        };
+        INSERT INTO Products (Id, Name, Description, Price, Dimensions, IsAvailableInStore, IsAvailableOnline, SubcategoryId, CreatedAt, Barcode)
+        VALUES
+        (1, N'Sofa Model X', N'Elegantna sofa za dnevni boravak.', 900.00, N'200x90x80 cm', 1, 1, 1, CAST(N'2024-12-10' AS DateTime2), N'123456789012'),
+        (2, N'Krevet Model Y', N'Udoban krevet za spavaću sobu.', 799.99, N'180x200 cm', 1, 1, 3, CAST(N'2024-12-10' AS DateTime2), N'234567890123'),
+        (3, N'Klub sto Elegance', N'Moderan klub sto za dnevni boravak.', 249.50, N'120x60x45 cm', 1, 0, 2, CAST(N'2024-12-11' AS DateTime2), N'345678901234'),
+        (4, N'Ormar Classic', N'Veliki ormar sa kliznim vratima.', 650.00, N'200x60x210 cm', 0, 1, 4, CAST(N'2024-12-11' AS DateTime2), N'456789012345'),
+        (5, N'Radni sto ProDesk', N'Radni sto sa puno prostora za opremu.', 480.75, N'150x70x75 cm', 0, 0, 5, CAST(N'2024-12-11' AS DateTime2), N'567890123456'),
+        (6, N'Kancelarijska stolica Ergo', N'Ergonomska stolica sa naslonima.', 320.00, N'60x60x110 cm', 1, 1, 6, CAST(N'2024-12-12' AS DateTime2), N'678901234567'),
+        (7, N'Sofa L-Shape Comfort', N'L-oblikovana sofa sa prostorom za ležanje.', 1050.00, N'260x160x90 cm', 1, 0, 1, CAST(N'2024-12-12' AS DateTime2), N'789012345678'),
+        (8, N'Noćni sto Elegant', N'Stofiran noćni sto sa fiokama.', 180.25, N'50x40x45 cm', 0, 1, 3, CAST(N'2024-12-12' AS DateTime2), N'890123456789'),
+        (9, N'Klub sto Rustic', N'Drveni sto rustičnog izgleda.', 199.99, N'110x60x40 cm', 1, 1, 2, CAST(N'2024-12-13' AS DateTime2), N'901234567890'),
+        (10, N'Ormar Compact', N'Kompaktan ormar za manje prostore.', 350.00, N'120x50x180 cm', 0, 0, 4, CAST(N'2024-12-13' AS DateTime2), N'012345678901');
 
-                context.Products.AddRange(products);
-                context.SaveChanges();
-            }
+        SET IDENTITY_INSERT Products OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
         private static void SeedProductReservations(AppDbContext context)
         {
-            if (!context.ProductReservations.Any())
-            {
-                var users = context.Users.ToList();
+            var sqlCommand = @"
+    SET IDENTITY_INSERT ProductReservations ON;
 
-                var reservations = new List<ProductReservation>
-        {
-            new ProductReservation
-            {
-                ReservationDate = DateTime.UtcNow.AddDays(2),
-                Notes = "Rezervacija za test proizvod",
-                CustomerId = users.FirstOrDefault(u => u.Username == "customer")?.Id ?? users.First().Id,
-                CreatedAt = DateTime.UtcNow,
-                IsApproved = false
-            }
-        };
+        INSERT INTO ProductReservations (Id, ReservationDate, Notes, CustomerId, CreatedAt, IsApproved)
+        VALUES
+    (1, CAST(N'2024-08-30T10:00:00.000' AS DateTime2), N'Rezervacija za test proizvod 1', '8b519724-b111-42d5-a7b5-de06b7dbbbb3', GETDATE(), 0),
+    (2, CAST(N'2024-09-01T12:00:00.000' AS DateTime2), N'Rezervacija za proizvod 2 i 3', '8b519724-b111-42d5-a7b5-de06b7dbbbb3', GETDATE(), 1),
+    (3, CAST(N'2024-09-05T14:30:00.000' AS DateTime2), N'Rezervacija za proizvod 4', '8b519724-b111-42d5-a7b5-de06b7dbbbb3', GETDATE(), 0);
 
-                context.ProductReservations.AddRange(reservations);
-                context.SaveChanges();
-            }
+    SET IDENTITY_INSERT ProductReservations OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
+
         private static void SeedProductReservationItems(AppDbContext context)
         {
-            if (!context.ProductReservationItems.Any())
-            {
-                var products = context.Products.ToList();
-                var reservations = context.ProductReservations.ToList();
+            var sqlCommand = @"
+    SET IDENTITY_INSERT ProductReservationItems ON;
 
-                var reservationItems = new List<ProductReservationItem>
-        {
-            new ProductReservationItem
-            {
-                Quantity = 2,
-                ProductReservationId = reservations.First().Id,
-                ProductId = products.First().Id,
-                CreatedAt = DateTime.UtcNow
-            }
-        };
+        INSERT INTO ProductReservationItems (Id, Quantity, ProductReservationId, ProductId, CreatedAt)
+        VALUES
+    (1, 2, 1, 1, GETDATE()), -- Sofa Model X
+    (2, 1, 2, 2, GETDATE()), -- Krevet Model Y
+    (3, 3, 2, 3, GETDATE()), -- Klub stolovi
+    (4, 1, 3, 4, GETDATE()); -- Ormari
 
-                context.ProductReservationItems.AddRange(reservationItems);
-                context.SaveChanges();
-            }
+    SET IDENTITY_INSERT ProductReservationItems OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
-
 
         private static void SeedPromotions(AppDbContext context)
         {
-            if (!context.Promotions.Any())
-            {
-                var admin = context.Users.FirstOrDefault(u => u.Username == "admin");
+            var sqlCommand = @"
+    SET IDENTITY_INSERT Promotions ON;
 
-                if (admin == null)
-                {
-                    var adminUser = new User
-                    {
-                        Id = "ff697def-9c3d-4b5a-84e2-e0ff755e9bc0",
-                        Username = "admin",
-                        Email = "admin@example.com",
-                        FirstName = "Admin",
-                        LastName = "User",
-                        BirthDate = DateTime.Parse("1999-12-12"),
-                        Gender = Gender.Male,
-                        PhoneNumber = "062245878",
-                        CityId = 1,
-                        CreatedAt = DateTime.Parse("2024-12-12"),
-                        CreatedById = null,
-                        EmailConfirmed = true
-                    };
-                    context.Users.Add(adminUser);
-                    context.SaveChanges();
-                    admin = adminUser;
-                }
+    INSERT INTO Promotions (Id, Heading, Content, AdminId, StartDate, EndDate, CreatedAt)
+    VALUES
+    (1, N'Summer Sale', N'Get up to 50% off on selected furniture items', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-09-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2)),
+    (2, N'New Collection', N'Check out our latest furniture collection', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-10-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2));
 
-                var promotion = new Promotion
-                {
-                    Heading = "Promocija zimske rasprodaje",
-                    Content = "Ne propustite fantastične popuste do 50% na sve proizvode!",
-                    AdminId = admin.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedById = null,
-                    LastModified = DateTime.UtcNow,
-                    LastModifiedBy = null
-                };
+    SET IDENTITY_INSERT Promotions OFF;
+    ";
 
-                context.Promotions.Add(promotion);
-                context.SaveChanges();
-            }
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
-
 
         private static void SeedGiftCards(AppDbContext context)
         {
-            if (!context.GiftCards.Any())
-            {
-                var giftCard = new GiftCard
-                {
-                    Name = "Poklon kartica 50€",
-                    CardNumber = "1234-5678-9012-3456",
-                    Amount = 50,
-                    ExpiryDate = DateTime.UtcNow.AddYears(1),
-                    IsActivated = true,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedById = null,
-                    LastModified = DateTime.UtcNow,
-                    LastModifiedBy = null
-                };
+            var sqlCommand = @"
+    SET IDENTITY_INSERT GiftCards ON;
 
-                context.GiftCards.Add(giftCard);
-                context.SaveChanges();
-            }
+    INSERT INTO GiftCards (Id, Name, CardNumber, Amount, ExpiryDate, IsActivated, CreatedAt, CreatedById, LastModified, LastModifiedBy)
+    VALUES
+    (1, N'Poklon kartica 50 BAM', N'1234-5678-9012-3456', 50, CAST(N'2024-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL),
+    (2, N'Poklon kartica 100 BAM', N'1234-5678-9012-3457', 40, CAST(N'2024-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL),
+    (3, N'Poklon kartica 200 BAM', N'1234-5678-9012-3458', 20, CAST(N'2024-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL);
+
+    SET IDENTITY_INSERT GiftCards OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
         private static void SeedCustomFurnitureReservations(AppDbContext context)
         {
-            if (!context.CustomFurnitureReservations.Any())
-            {
-                var user = context.Users.FirstOrDefault(u => u.Username == "customer");
+            var sqlCommand = @"
+    SET IDENTITY_INSERT CustomFurnitureReservations ON;
 
-                if (user != null)
-                {
-                    var customFurnitureReservation = new CustomFurnitureReservation
-                    {
-                        Note = "Rezervacija za custom namještaj",
-                        ReservationDate = DateTime.UtcNow.AddMonths(1),
-                        ReservationStatus = true,
-                        UserId = user.Id,
-                        CreatedAt = DateTime.UtcNow,
-                        CreatedById = null,
-                        LastModified = DateTime.UtcNow,
-                        LastModifiedBy = null
-                    };
+    INSERT INTO CustomFurnitureReservations (Id, Note, ReservationDate, ReservationStatus, UserId, CreatedAt, CreatedById, LastModified, LastModifiedBy)
+    VALUES
+    (1, N'Rezervacija za custom namještaj za dnevni boravak', CAST(N'2024-09-28T00:00:00.0000000' AS DateTime2), 1, '8b519724-b111-42d5-a7b5-de06b7dbbbb3', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL),
+    (2, N'Rezervacija za custom namještaj za kuhinju', CAST(N'2024-09-28T00:00:00.0000000' AS DateTime2), 1, '8b519724-b111-42d5-a7b5-de06b7dbbbb3', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL);
 
-                    context.CustomFurnitureReservations.Add(customFurnitureReservation);
-                    context.SaveChanges();
-                }
-                else
-                {
-                    Console.WriteLine("Nema korisnika sa username 'customer'. Kreirajte korisnika prije dodavanja rezervacija.");
-                }
-            }
+    SET IDENTITY_INSERT CustomFurnitureReservations OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
+
         private static void SeedNotifications(AppDbContext context)
         {
-            if (!context.Notifications.Any())
-            {
-                var admin = context.Users.FirstOrDefault(u => u.Username == "admin");
+            var sqlCommand = @"
+    SET IDENTITY_INSERT Notifications ON;
 
-                if (admin != null)
-                {
-                    var notification = new Notification
-                    {
-                        Heading = "Nova promocija",
-                        Content = "Pregledajte novu promociju zimske rasprodaje na našem sajtu!",
-                        AdminId = admin.Id,
-                        CreatedAt = DateTime.UtcNow,
-                        CreatedById = null,
-                        LastModified = DateTime.UtcNow,
-                        LastModifiedBy = null
-                    };
+    INSERT INTO Notifications (Id, Heading, Content, AdminId, CreatedAt, CreatedById, LastModified, LastModifiedBy)
+    VALUES
+    (1, N'Nova promocija', N'Pregledajte novu promociju zimske rasprodaje na našem sajtu!', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL);
+ 
+    SET IDENTITY_INSERT Notifications OFF;
+    ";
 
-                    context.Notifications.Add(notification);
-                    context.SaveChanges();
-                }
-                else
-                {
-                    Console.WriteLine("Nema admin korisnika u bazi. Kreirajte admina prije dodavanja notifikacija.");
-                }
-            }
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
-
 
         private static void SeedOrders(AppDbContext context)
         {
-            if (!context.Orders.Any())
-            {
-                var users = context.Users.ToList();
+            var sqlCommand = @"
+    SET IDENTITY_INSERT Orders ON;
 
-                var orders = new List<Order>
-        {
-            new Order
-            {
-                OrderDate = DateTime.UtcNow.AddDays(-1),
-                Delivery = Delivery.InStorePickup,
-                TotalPrice = 400,
-                CustomerId = users.FirstOrDefault(u => u.Username == "customer")?.Id ?? users.First().Id,
-                CreatedAt = DateTime.UtcNow,
-                IsApproved = true
-            },
-            new Order
-            {
-                OrderDate = DateTime.UtcNow.AddDays(3),
-                Delivery = Delivery.InStorePickup,
-                TotalPrice = 250,
-                CustomerId = users.FirstOrDefault(u => u.Username == "customer")?.Id ?? users.First().Id,
-                CreatedAt = DateTime.UtcNow,
-                IsApproved = false
-            }
-        };
+    INSERT INTO Orders (Id, OrderDate, Delivery, TotalPrice, CustomerId, CreatedAt, IsApproved)
+    VALUES
+    (1, CAST(N'2024-08-27T00:00:00.0000000' AS DateTime2), 0, 400, '8b519724-b111-42d5-a7b5-de06b7dbbbb3', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), 1);
 
-                context.Orders.AddRange(orders);
-                context.SaveChanges();
-            }
+    SET IDENTITY_INSERT Orders OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
-
 
         private static void SeedOrderItems(AppDbContext context)
         {
-            if (!context.OrderItems.Any())
-            {
-                var products = context.Products.ToList();
-                var orders = context.Orders.ToList();
+            var sqlCommand = @"
+    SET IDENTITY_INSERT OrderItems ON;
 
-                var orderItems = new List<OrderItem>
-        {
-            new OrderItem
-            {
-                Quantity = 1,
-                OrderId = orders.First().Id,
-                ProductId = products.First().Id,
-                CreatedAt = DateTime.UtcNow
-            },
-            new OrderItem
-            {
-                Quantity = 2,
-                OrderId = orders.First().Id,
-                ProductId = products.Skip(1).First().Id,
-                CreatedAt = DateTime.UtcNow
-            }
-        };
+    INSERT INTO OrderItems (Id, Quantity, OrderId, ProductId, CreatedAt)
+    VALUES
+    (1, 1, 1, 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2));
 
-                context.OrderItems.AddRange(orderItems);
-                context.SaveChanges();
-            }
+    SET IDENTITY_INSERT OrderItems OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
         private static void SeedWishLists(AppDbContext context)
         {
-            if (!context.WishLists.Any())
-            {
-                var users = context.Users.ToList();
+            var sqlCommand = @"
+    SET IDENTITY_INSERT WishLists ON;
 
-                var wishLists = new List<WishList>
-        {
-            new WishList
-            {
-                DateCreated = DateTime.UtcNow,
-                CustomerId = users.FirstOrDefault(u => u.Username == "customer")?.Id ?? users.First().Id,
-                CreatedAt = DateTime.UtcNow
-            }
-        };
+    INSERT INTO WishLists (Id, DateCreated, CustomerId, CreatedAt)
+    VALUES
+    (1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), '8b519724-b111-42d5-a7b5-de06b7dbbbb3', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2));
 
-                context.WishLists.AddRange(wishLists);
-                context.SaveChanges();
-            }
+    SET IDENTITY_INSERT WishLists OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
         private static void SeedReports(AppDbContext context)
         {
-            if (!context.Reports.Any())
-            {
-                var admins = context.Users.Where(u => u.Username == "admin").ToList(); 
-                var customers = context.Users.Where(u => u.Username == "customer").ToList(); 
+            var sqlCommand = @"
+    SET IDENTITY_INSERT Reports ON;
 
-                var reports = new List<Report>
+    INSERT INTO Reports (Id, GenerationDate, Content, AdminId, CustomerId, Month, Year, CreatedAt, CreatedById, ReportType, LastModified, LastModifiedBy)
+    VALUES
+    (1, CAST(N'2024-07-01T00:00:00.0000000' AS DateTime2), N'Monthly sales report for the previous month.', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', '8b519724-b111-42d5-a7b5-de06b7dbbbb3', 7, 2024, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0');
+    
+
+    SET IDENTITY_INSERT Reports OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
+        }
+
+        private static void SeedProductPictures(AppDbContext context)
         {
-            new Report
+            // First, ensure the images directory exists and create placeholder images if needed
+            var webRootPath = Directory.GetCurrentDirectory();
+            var imagesPath = Path.Combine(webRootPath, "wwwroot", "images");
+            
+            if (!Directory.Exists(imagesPath))
             {
-                GenerationDate = DateTime.UtcNow.AddMonths(-1),
-                Content = "Monthly sales report for the previous month.",
-                AdminId = admins.FirstOrDefault()?.Id ?? admins.First().Id, 
-                CustomerId = customers.FirstOrDefault()?.Id ?? customers.First().Id,  
-                Month = Month.April,
-                Year = DateTime.UtcNow.AddMonths(-1).Year,
-                CreatedAt = DateTime.UtcNow,
-                CreatedById = admins.FirstOrDefault()?.Id ?? admins.First().Id,  
-                ReportType = ReportType.Monthly,
-                LastModified = DateTime.UtcNow,
-                LastModifiedBy = admins.FirstOrDefault()?.Id ?? admins.First().Id 
-            },
-             new Report
-            {
-                GenerationDate = DateTime.UtcNow.AddMonths(-1), 
-                Content = "Year-end performance report for the last year.",
-                AdminId = admins.FirstOrDefault()?.Id ?? admins.First().Id,  
-                CustomerId = customers.FirstOrDefault()?.Id ?? customers.First().Id, 
-                Month = Month.June,
-                Year = DateTime.UtcNow.AddMonths(-1).Year,
-                CreatedAt = DateTime.UtcNow.AddMonths(-1),
-                CreatedById = admins.FirstOrDefault()?.Id ?? admins.First().Id,  
-                ReportType = ReportType.Yearly, 
-                LastModified = DateTime.UtcNow.AddMonths(-1),
-                LastModifiedBy = admins.FirstOrDefault()?.Id ?? admins.First().Id  
+                Directory.CreateDirectory(imagesPath);
             }
 
-        };
+            // Create placeholder image files if they don't exist
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_1.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_2.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_L_1.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_L_2.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_1.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_bed_1.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_bed_2.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_bed_Y_1.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_table_1.jpg");
+            CreatePlaceholderImageIfNotExists(imagesPath, "sample_table_2.jpg");
 
-                context.Reports.AddRange(reports);
-                context.SaveChanges();
+            var sqlCommand = @"
+    SET IDENTITY_INSERT ProductPictures ON;
+
+    INSERT INTO ProductPictures (Id, ImagePath, ProductId, CreatedAt)
+    VALUES
+    -- Images for Product 1 (Sofa Model X)
+    (1, N'/images/sample_sofa_1.jpg', 1, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (2, N'/images/sample_sofa_2.jpg', 1, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Product 2 (Krevet Model Y)
+    (3, N'/images/sample_bed_1.jpg', 2, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (4, N'/images/sample_bed_2.jpg', 2, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Product 3 (Klub sto Elegance)
+    (5, N'/images/sample_table_1.jpg', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (6, N'/images/sample_table_2.jpg', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Product 7 (Sofa L-Shape Comfort)
+    (7, N'/images/sample_sofa_L_1.jpg', 7, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (8, N'/images/sample_sofa_L_2.jpg', 7, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Product 9 (Klub sto Rustic)
+    (9, N'/images/sample_table_1.jpg', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2))
+
+    SET IDENTITY_INSERT ProductPictures OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
+        }
+
+        private static void CreatePlaceholderImageIfNotExists(string imagesPath, string fileName)
+        {
+            var filePath = Path.Combine(imagesPath, fileName);
+            if (!File.Exists(filePath))
+            {
+                // Create a simple 1x1 pixel placeholder image (you can replace this with actual image creation logic)
+                var placeholderContent = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==");
+                File.WriteAllBytes(filePath, placeholderContent);
             }
         }
 

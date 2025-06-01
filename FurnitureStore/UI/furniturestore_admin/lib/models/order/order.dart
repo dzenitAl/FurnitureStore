@@ -1,3 +1,4 @@
+import 'package:furniturestore_admin/models/order_item/order_item.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'order.g.dart';
@@ -10,6 +11,7 @@ class OrderModel {
   double? totalPrice;
   bool? isApproved;
   String? customerId;
+  List<OrderItemModel>? orderItems;
 
   OrderModel({
     this.id,
@@ -18,6 +20,7 @@ class OrderModel {
     this.totalPrice,
     this.isApproved,
     this.customerId,
+    this.orderItems,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) =>

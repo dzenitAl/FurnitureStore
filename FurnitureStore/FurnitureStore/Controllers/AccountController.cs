@@ -4,6 +4,7 @@ using FurnitureStore.Models.SearchObjects;
 using FurnitureStore.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FurnitureStore.Controllers
 {
@@ -85,6 +86,25 @@ namespace FurnitureStore.Controllers
         {
             var user = await _accountService.GetUserById(userId);
             return Ok(user);
+        }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<ActionResult<bool>> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var result = await _accountService.ChangePassword(userId, request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while changing the password.");
+            }
         }
 
     }

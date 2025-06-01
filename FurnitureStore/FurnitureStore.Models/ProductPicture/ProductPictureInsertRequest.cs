@@ -10,5 +10,7 @@ namespace FurnitureStore.Models.ProductPicture
     {
         public string ImagePath { get; set; }
         public long ProductId { get; set; }
+        public string EntityType { get; set; }
+        public long EntityId { get; set; }
     }
 }

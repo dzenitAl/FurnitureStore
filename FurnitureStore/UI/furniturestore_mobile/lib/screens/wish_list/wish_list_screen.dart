@@ -4,7 +4,7 @@ import 'package:furniturestore_mobile/utils/utils.dart';
 import 'package:furniturestore_mobile/widgets/master_screen.dart';
 
 class WishListScreen extends StatefulWidget {
-  const WishListScreen({Key? key}) : super(key: key);
+  const WishListScreen({super.key});
 
   @override
   _WishListScreenState createState() => _WishListScreenState();

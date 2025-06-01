@@ -10,5 +10,8 @@ namespace FurnitureStore.Models.Promotion
         public string AdminId { get; set; }
         public User.User Admin { get; set; }
         public List<Product.Product> Products { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public long? ImageId { get; set; }
     }
 }

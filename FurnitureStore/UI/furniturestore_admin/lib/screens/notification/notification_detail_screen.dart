@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:furniturestore_admin/models/notification/notification.dart';
-import 'package:furniturestore_admin/models/account/account.dart';
-import 'package:furniturestore_admin/models/search_result.dart';
 import 'package:furniturestore_admin/providers/notification_provider.dart';
 import 'package:furniturestore_admin/providers/account_provider.dart';
-import 'package:furniturestore_admin/widgets/custom_dropdown_field.dart';
 import 'package:furniturestore_admin/widgets/custom_text_field.dart';
 import 'package:provider/provider.dart';
 
 class NotificationDetailScreen extends StatefulWidget {
   final NotificationModel? notification;
 
-  const NotificationDetailScreen({Key? key, this.notification})
-      : super(key: key);
+  const NotificationDetailScreen({super.key, this.notification});
 
   @override
   _NotificationDetailScreenState createState() =>
@@ -25,36 +21,26 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
   late NotificationProvider _notificationProvider;
   late AccountProvider _accountProvider;
   Map<String, dynamic> _initialValue = {};
-  SearchResult<AccountModel>? adminResult;
   bool isLoading = true;
+  dynamic currentUser;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     _notificationProvider = context.read<NotificationProvider>();
     _accountProvider = context.read<AccountProvider>();
-    _initialValue = {
-      'heading': widget.notification?.heading ?? '',
-      'content': widget.notification?.content ?? '',
-      'adminId': widget.notification?.adminId ?? '',
-    };
-    _fetchAdmins();
+    initForm();
   }
 
-  Future<void> _fetchAdmins() async {
-    try {
-      adminResult = await _accountProvider.getAll(filter: {'userTypes': 1});
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching admins: $e')),
-      );
-      setState(() {
-        isLoading = false;
-      });
-    }
+  Future initForm() async {
+    currentUser = _accountProvider.getCurrentUser();
+    setState(() {
+      isLoading = false;
+      _initialValue = {
+        'heading': widget.notification?.heading,
+        'content': widget.notification?.content,
+      };
+    });
   }
 
   @override
@@ -68,7 +54,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : Row(
                 children: [
                   Expanded(
@@ -84,7 +70,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
                     flex: 4,
                     child: Container(
@@ -114,7 +100,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                                 style:
                                     Theme.of(context).textTheme.headlineSmall,
                               ),
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               const CustomTextField(
                                   name: 'heading',
                                   label: 'Naslov',
@@ -124,28 +110,14 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                                   label: 'Sadržaj',
                                   isRequired: true,
                                   maxLines: 3),
-                              CustomDropdownField(
-                                name: 'adminId',
-                                label: 'Administrator',
-                                isRequired: true,
-                                formKey: _formKey,
-                                items: adminResult?.result.map((admin) {
-                                      return DropdownMenuItem<String>(
-                                        alignment: AlignmentDirectional.center,
-                                        value: admin.id,
-                                        child: Text(admin.fullName ?? ''),
-                                      );
-                                    }).toList() ??
-                                    [],
-                              ),
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               Center(
                                 child: ElevatedButton(
                                   onPressed: _saveNotification,
                                   style: ElevatedButton.styleFrom(
                                     foregroundColor: Colors.white,
-                                    backgroundColor: Color(0xFFF4A258),
-                                    padding: EdgeInsets.symmetric(
+                                    backgroundColor: const Color(0xFFF4A258),
+                                    padding: const EdgeInsets.symmetric(
                                         vertical: 16.0, horizontal: 32.0),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -155,7 +127,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                                       widget.notification == null
                                           ? 'Dodaj'
                                           : 'Sačuvaj',
-                                      style: TextStyle(fontSize: 16)),
+                                      style: const TextStyle(fontSize: 16)),
                                 ),
                               ),
                             ],
@@ -176,6 +148,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
       print('Form Data: $formData');
 
       var request = Map<String, dynamic>.from(formData!);
+      request['adminId'] = currentUser?.nameid;
 
       try {
         if (widget.notification == null) {
@@ -183,17 +156,17 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
         } else {
           await _notificationProvider.update(widget.notification!.id!, request);
         }
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       } on Exception catch (e) {
         showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: Text("Greška"),
+            title: const Text("Greška"),
             content: Text(e.toString()),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("OK"),
+                child: const Text("OK"),
               ),
             ],
           ),

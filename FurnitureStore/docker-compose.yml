@@ -45,6 +45,8 @@ services:
     depends_on:
       - furniturestore-sql
       - rabbitMQ
+    volumes:
+      - ./FurnitureStore/wwwroot/images:/app/wwwroot/images
 
   dodatni_api:
     restart: unless-stopped
@@ -63,6 +65,9 @@ services:
       - furniturestore2024
     depends_on:
       - rabbitMQ
+
+volumes:
+  product_images:
 
 networks:
   furniturestore2024:

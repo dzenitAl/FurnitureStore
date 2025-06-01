@@ -7,8 +7,9 @@ class CategoryModel {
   int? id;
   String? name;
   String? description;
+  String? imagePath;
 
-  CategoryModel(this.id, this.name, this.description);
+  CategoryModel(this.id, this.name, this.description, this.imagePath);
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) =>
       _$CategoryModelFromJson(json);

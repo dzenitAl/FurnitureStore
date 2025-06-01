@@ -40,7 +40,6 @@ namespace FurnitureStore.Services.Services
             {
                 string password = null;
                 bool passwordGenerated = false;
-                // Validate the password rule since it is not required depends on who is creating account. But if it is getting set the min lenght is 6
                 if (String.IsNullOrEmpty(request.Password))
                 {
                     password = "Test1234!";
@@ -218,6 +217,23 @@ namespace FurnitureStore.Services.Services
             }
 
             return UserTypes.Admin;
+        }
+
+        public async Task<bool> ChangePassword(string userId, ChangePasswordRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new ApiException("User not found", System.Net.HttpStatusCode.NotFound);
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.CurrentPassword, false);
+            if (!result.Succeeded)
+                throw new ApiException("Current password is incorrect", System.Net.HttpStatusCode.BadRequest);
+
+            var changeResult = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+            if (!changeResult.Succeeded)
+                throw new ApiException(changeResult.Errors.First().Description, System.Net.HttpStatusCode.BadRequest);
+
+            return true;
         }
     }
 }

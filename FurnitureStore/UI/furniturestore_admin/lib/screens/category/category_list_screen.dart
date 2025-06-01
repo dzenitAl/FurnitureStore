@@ -19,6 +19,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   SearchResult<CategoryModel>? result;
   final TextEditingController _nameFilterController = TextEditingController();
 
+  bool _isLoading = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -32,23 +34,49 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   }
 
   _loadData({Map<String, String>? filters}) async {
-    var data = await _categoryProvider.get();
-
     setState(() {
-      result = SearchResult<CategoryModel>();
-      result!.count = data.count;
-
-      final nameFilter = _nameFilterController.text.toLowerCase();
-
-      if (nameFilter.isEmpty) {
-        result!.result = data.result;
-      } else {
-        result!.result = data.result.where((category) {
-          final categoryName = category.name?.toLowerCase() ?? '';
-          return categoryName.contains(nameFilter);
-        }).toList();
-      }
+      _isLoading = true;
     });
+
+    try {
+      print("Loading categories...");
+
+      var data = await _categoryProvider.get();
+      print("Response received");
+
+      setState(() {
+        _isLoading = false;
+        result = SearchResult<CategoryModel>();
+        result!.count = data.count;
+
+        final nameFilter = _nameFilterController.text.toLowerCase();
+        if (nameFilter.isEmpty) {
+          result!.result = data.result;
+        } else {
+          result!.result = data.result.where((category) {
+            final categoryName = category.name?.toLowerCase() ?? '';
+            return categoryName.contains(nameFilter);
+          }).toList();
+        }
+      });
+    } catch (error) {
+      print("Error details: $error");
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading categories: ${error.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _loadData(filters: filters),
+          ),
+        ),
+      );
+    }
   }
 
   void _applyFilters() {
@@ -61,165 +89,183 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   Widget build(BuildContext context) {
     return MasterScreenWidget(
       titleWidget: const Text("Lista kategorija"),
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text(
-              "Lista kategorija",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1D3557),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
+      child: Stack(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _nameFilterController,
-                    decoration: const InputDecoration(
-                      labelText: 'Filtriraj po nazivu kategorije',
-                      labelStyle: TextStyle(color: Color(0xFF2C5C7F)),
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search, color: Color(0xFFF4A258)),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFFF4A258)),
+                const Text(
+                  "Lista kategorija",
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1D3557),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _nameFilterController,
+                        decoration: const InputDecoration(
+                          labelText: 'Filtriraj po nazivu kategorije',
+                          labelStyle: TextStyle(color: Color(0xFF2C5C7F)),
+                          border: OutlineInputBorder(),
+                          prefixIcon:
+                              Icon(Icons.search, color: Color(0xFFF4A258)),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Color(0xFFF4A258)),
+                          ),
+                        ),
+                        cursorColor: const Color(0xFFF4A258),
                       ),
                     ),
-                    cursorColor: const Color(0xFFF4A258),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: _applyFilters,
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: const Color(0xFFF4A258),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 24.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  child: const Text("Pretraga"),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    bool? shouldRefresh = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => CategoryDetailScreen(
-                          category: null,
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _applyFilters,
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFF4A258),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 24.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                    );
+                      child: const Text("Pretraga"),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        bool? shouldRefresh = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => CategoryDetailScreen(
+                              category: null,
+                            ),
+                          ),
+                        );
 
-                    if (shouldRefresh ?? false) {
-                      _loadData();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: const Color(0xFF1D3557),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 24.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                        if (shouldRefresh ?? false) {
+                          _loadData();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF1D3557),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 24.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: const Text("Dodaj novu kategoriju"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              'Naziv',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1D3557)),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Opis',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1D3557)),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              '',
+                            ),
+                          ),
+                        ],
+                        rows: result?.result.map((CategoryModel category) {
+                              return DataRow(
+                                onSelectChanged: (selected) async {
+                                  if (selected == true) {
+                                    final result =
+                                        await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            CategoryDetailScreen(
+                                                category: category),
+                                      ),
+                                    );
+
+                                    if (result == true) {
+                                      _loadData();
+                                    }
+                                  }
+                                },
+                                cells: [
+                                  DataCell(
+                                    Text(
+                                      category.name ?? '',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF2C5C7F),
+                                        fontFamily: 'Roboto',
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      category.description ?? '',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF2C5C7F),
+                                        fontFamily: 'Roboto',
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    DeleteModal(
+                                      title: 'Potvrda brisanja',
+                                      content:
+                                          'Da li ste sigurni da želite obrisati ovu kategoriju?',
+                                      onDelete: () async {
+                                        await _categoryProvider
+                                            .delete(category.id!);
+                                        _loadData();
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList() ??
+                            [],
+                      ),
                     ),
                   ),
-                  child: const Text("Dodaj novu kategoriju"),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(
-                        label: Text(
-                          'Naziv',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1D3557)),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Opis',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1D3557)),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          '',
-                        ),
-                      ),
-                    ],
-                    rows: result?.result.map((CategoryModel category) {
-                          return DataRow(
-                            onSelectChanged: (selected) {
-                              if (selected == true) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => CategoryDetailScreen(
-                                        category: category),
-                                  ),
-                                );
-                              }
-                            },
-                            cells: [
-                              DataCell(
-                                Text(
-                                  category.name ?? '',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2C5C7F),
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  category.description ?? '',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2C5C7F),
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                DeleteModal(
-                                  title: 'Potvrda brisanja',
-                                  content:
-                                      'Da li ste sigurni da želite obrisati ovu kategoriju?',
-                                  onDelete: () async {
-                                    await _categoryProvider
-                                        .delete(category.id!);
-                                    _loadData();
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList() ??
-                        [],
-                  ),
-                ),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

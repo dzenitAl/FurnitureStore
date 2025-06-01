@@ -21,7 +21,8 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
   SearchResult<NotificationModel>? result;
   Map<String, String> adminNameMap = {};
   final TextEditingController _nameFilterController = TextEditingController();
-
+  bool _isLoading = false;
+  dynamic currentUser;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -31,7 +32,14 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
   }
 
   Future<void> _loadData({Map<String, String>? filters}) async {
+    setState(() {
+      _isLoading = true;
+    });
+    await Future.delayed(const Duration(seconds: 1));
+
     try {
+      currentUser = _accountProvider.getCurrentUser();
+
       var notificationData = await _notificationProvider.get();
 
       var adminResult = await _accountProvider.getAll();
@@ -44,6 +52,8 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
       final nameFilter = _nameFilterController.text.toLowerCase();
 
       setState(() {
+        _isLoading = false;
+
         result = SearchResult<NotificationModel>();
         result!.count = notificationData.count;
 
@@ -74,182 +84,205 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
   Widget build(BuildContext context) {
     return MasterScreenWidget(
       titleWidget: const Text("Lista notifikacija"),
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text(
-              "Lista notifikacija",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1D3557),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
+      child: Stack(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _nameFilterController,
-                    decoration: const InputDecoration(
-                      labelText: 'Filtriraj po nazivu',
-                      labelStyle: TextStyle(color: Color(0xFF2C5C7F)),
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search, color: Color(0xFFF4A258)),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFFF4A258)),
+                const Text(
+                  "Lista notifikacija",
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1D3557),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _nameFilterController,
+                        decoration: const InputDecoration(
+                          labelText: 'Filtriraj po nazivu',
+                          labelStyle: TextStyle(color: Color(0xFF2C5C7F)),
+                          border: OutlineInputBorder(),
+                          prefixIcon:
+                              Icon(Icons.search, color: Color(0xFFF4A258)),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Color(0xFFF4A258)),
+                          ),
+                        ),
+                        cursorColor: const Color(0xFFF4A258),
                       ),
                     ),
-                    cursorColor: const Color(0xFFF4A258),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: _applyFilters,
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: const Color(0xFFF4A258),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 24.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  child: const Text("Pretraga"),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => NotificationDetailScreen(
-                          notification: null,
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _applyFilters,
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFF4A258),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 24.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: const Color(0xFF1D3557),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 24.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                      child: const Text("Pretraga"),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const NotificationDetailScreen(
+                              notification: null,
+                            ),
+                          ),
+                        );
+
+                        if (result == true) {
+                          _loadData();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF1D3557),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 24.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: const Text("Dodaj novu notifikaciju"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              'Naslov',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1D3557),
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Sadržaj',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1D3557),
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Admin',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1D3557),
+                              ),
+                            ),
+                          ),
+                          DataColumn(label: Text("")),
+                        ],
+                        rows: result?.result
+                                .map((NotificationModel notification) {
+                              return DataRow(
+                                onSelectChanged: (selected) async {
+                                  if (selected == true) {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            NotificationDetailScreen(
+                                                notification: notification),
+                                      ),
+                                    );
+                                    if (result == true) {
+                                      _loadData();
+                                    }
+                                  }
+                                },
+                                cells: [
+                                  DataCell(
+                                    Text(
+                                      notification.heading ?? '',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF2C5C7F),
+                                        fontFamily: 'Roboto',
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      notification.content ?? '',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF2C5C7F),
+                                        fontFamily: 'Roboto',
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      adminNameMap[
+                                              notification.adminId ?? ''] ??
+                                          '',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF2C5C7F),
+                                        fontFamily: 'Roboto',
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    DeleteModal(
+                                      title: 'Potvrda brisanja',
+                                      content:
+                                          'Da li ste sigurni da želite obrisati ovu notifikaciju?',
+                                      onDelete: () async {
+                                        await _notificationProvider
+                                            .delete(notification.id!);
+                                        _loadData();
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList() ??
+                            [],
+                      ),
                     ),
                   ),
-                  child: const Text("Dodaj novu notifikaciju"),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(
-                        label: Text(
-                          'Naslov',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1D3557),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Sadržaj',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1D3557),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Admin',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1D3557),
-                          ),
-                        ),
-                      ),
-                      DataColumn(label: Text("")),
-                    ],
-                    rows: result?.result.map((NotificationModel notification) {
-                          return DataRow(
-                            onSelectChanged: (selected) {
-                              if (selected == true) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        NotificationDetailScreen(
-                                      notification: notification,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            cells: [
-                              DataCell(
-                                Text(
-                                  notification.heading ?? '',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2C5C7F),
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  notification.content ?? '',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2C5C7F),
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  adminNameMap[notification.adminId ?? ''] ??
-                                      '',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2C5C7F),
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                DeleteModal(
-                                  title: 'Potvrda brisanja',
-                                  content:
-                                      'Da li ste sigurni da želite obrisati ovu notifikaciju?',
-                                  onDelete: () async {
-                                    await _notificationProvider
-                                        .delete(notification.id!);
-                                    _loadData();
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList() ??
-                        [],
-                  ),
-                ),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

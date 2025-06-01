@@ -1,6 +1,5 @@
 import 'package:furniturestore_mobile/models/product/product.dart';
 import 'package:furniturestore_mobile/providers/base_provider.dart';
-import 'package:http/http.dart' as http_client;
 import 'dart:convert';
 
 class ProductProvider extends BaseProvider<ProductModel> {

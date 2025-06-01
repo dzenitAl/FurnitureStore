@@ -15,7 +15,7 @@ using FurnitureStore.Models.Promotion;
 using FurnitureStore.Models.Report;
 using FurnitureStore.Models.Subcategory;
 using FurnitureStore.Models.WishList;
-
+using System.Linq;
 
 namespace FurnitureStore.Services.MappingProfile
 {
@@ -45,12 +45,17 @@ namespace FurnitureStore.Services.MappingProfile
             CreateMap<CategoryRequest, Database.Category>();
             CreateMap<Database.City, City>();
             CreateMap<CityRequest, Database.City>();
-            CreateMap<Database.Product, Product>();
+            CreateMap<Database.Product, Product>()
+                .ForMember(dest => dest.ProductPictures, opt => opt.MapFrom(src => src.ProductPictures));
             CreateMap<ProductInsertRequest, Database.Product>();
             CreateMap<ProductUpdateRequest, Database.Product>();
             CreateMap<Database.ProductPicture, ProductPicture>();
-            CreateMap<ProductPictureInsertRequest, Database.ProductPicture>();
-            CreateMap<ProductPictureUpdateRequest, Database.ProductPicture>();
+            CreateMap<ProductPictureInsertRequest, ProductPicture>()
+                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(src => src.EntityType))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId));
+            CreateMap<ProductPictureUpdateRequest, ProductPicture>()
+                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(src => src.EntityType))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId));
             //CreateMap<Database.ProductReservation, Models.ProductReservation.ProductReservation>();
             //CreateMap<Models.ProductReservation.ProductReservation, Database.ProductReservation>();
             //CreateMap<Models.ProductReservation.ProductReservationUpdateRequest, Database.ProductReservation>();
@@ -77,6 +82,7 @@ namespace FurnitureStore.Services.MappingProfile
             CreateMap<Database.User, UserResponse>();
             CreateMap<Database.Payment, Payment>();
             CreateMap<PaymentRequest, Database.Payment>();
+            
 
             CreateMap<Database.ProductReservationItem, ProductReservationItem>()
        .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product));

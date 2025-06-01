@@ -30,7 +30,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return data;
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -48,7 +48,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return AccountModel.fromJson(data);
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -59,7 +59,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
     var jsonRequest = jsonEncode(request);
     var response = await http.put(uri, headers: headers, body: jsonRequest);
     if (!isValidResponse(response)) {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -75,7 +75,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return AccountModel.fromJson(data);
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -90,7 +90,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return AccountModel.fromJson(data);
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -104,21 +104,29 @@ class AccountProvider extends BaseProvider<AccountModel> {
     var uri = Uri.parse(url);
     var headers = createHeaders();
 
-    var response = await http.get(uri, headers: headers);
-    if (isValidResponse(response)) {
-      var data = jsonDecode(response.body);
+    try {
+      var response = await http.get(uri, headers: headers);
+      if (isValidResponse(response)) {
+        var data = jsonDecode(response.body);
 
-      var result = SearchResult<AccountModel>();
+        var result = SearchResult<AccountModel>();
 
-      result.count = data['count'];
+        result.count = data['count'];
 
-      for (var item in data['result']) {
-        result.result.add(fromJson(item));
+        for (var item in data['result']) {
+          result.result.add(fromJson(item));
+        }
+
+        return result;
+      } else {
+        throw Exception("Unknown error");
       }
-
-      return result;
-    } else {
-      throw new Exception("Unknown error");
+    } catch (e) {
+      if (e is http.ClientException) {
+        throw Exception("Network connection error. Please check your internet connection.");
+      } else {
+        rethrow;
+      }
     }
   }
 }

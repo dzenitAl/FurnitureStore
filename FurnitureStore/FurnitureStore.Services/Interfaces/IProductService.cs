@@ -7,6 +7,6 @@ namespace FurnitureStore.Services.Interfaces
 {
     public interface IProductService : ICRUDService<Product, ProductSearchObject, ProductInsertRequest, ProductUpdateRequest, long>
     {
-        List<Product> Recommend(int id);
+        List<Product> Recommend(long id);
     }
 }

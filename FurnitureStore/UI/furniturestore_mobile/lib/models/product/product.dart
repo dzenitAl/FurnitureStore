@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:furniturestore_mobile/models/product_pictures/product_pictures.dart';
 
 part 'product.g.dart';
 
@@ -13,6 +14,7 @@ class ProductModel {
   bool? isAvailableInStore;
   bool? isAvailableOnline;
   int? subcategoryId;
+  List<ProductPicturesModel>? productPictures;
 
   ProductModel({
     this.id,
@@ -24,6 +26,7 @@ class ProductModel {
     this.isAvailableInStore,
     this.isAvailableOnline,
     this.subcategoryId,
+    this.productPictures,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) =>

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:furniturestore_mobile/main.dart';
 import 'package:furniturestore_mobile/screens/account_profile/profile_screen.dart';
 import 'package:furniturestore_mobile/screens/category/category_list_screen.dart';
-import 'package:furniturestore_mobile/screens/custom_reservation/custom_furniture_reservation.dart';
+import 'package:furniturestore_mobile/screens/custom_reservation/custom_reservation_overview.dart';
 import 'package:furniturestore_mobile/screens/gift_card/gift_card_list_screen.dart';
 import 'package:furniturestore_mobile/screens/home/home_screen.dart';
 import 'package:furniturestore_mobile/screens/notification/notification_list_screen.dart';
@@ -35,10 +35,25 @@ class _MasterScreenWidgetState extends State<MasterScreenWidget> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   int _selectedIndex = 1;
+  int _cartItemCount = 0;
 
   @override
   void initState() {
     super.initState();
+    _updateCartCount();
+    Order.addListener(_updateCartCount);
+  }
+
+  @override
+  void dispose() {
+    Order.removeListener(_updateCartCount);
+    super.dispose();
+  }
+
+  void _updateCartCount() {
+    setState(() {
+      _cartItemCount = Order.getOrderItems().length;
+    });
   }
 
   final List<String> _titles = [
@@ -76,6 +91,50 @@ class _MasterScreenWidgetState extends State<MasterScreenWidget> {
     setState(() {
       _scaffoldKey.currentState!.openDrawer();
     });
+  }
+
+  Widget buildCartIcon() {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Center(
+            child: Icon(
+              Icons.shopping_cart,
+            ),
+          ),
+          if (_cartItemCount > 0)
+            Positioned(
+              top: -3,
+              right: -3,
+              child: Container(
+                padding: const EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 240, 84, 72),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 20,
+                  minHeight: 20,
+                ),
+                child: Center(
+                  child: Text(
+                    _cartItemCount.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -236,7 +295,7 @@ class _MasterScreenWidgetState extends State<MasterScreenWidget> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) =>
-                                const CustomFurnitureReservationScreen(),
+                                const CustomReservationOverviewScreen(),
                           ),
                         );
                       },
@@ -266,17 +325,25 @@ class _MasterScreenWidgetState extends State<MasterScreenWidget> {
       ),
       body: widget.child!,
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
+            icon: buildCartIcon(),
             label: 'Korpa',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+          const BottomNavigationBarItem(
+            icon: SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(Icons.home),
+            ),
             label: 'Početna',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+          const BottomNavigationBarItem(
+            icon: SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(Icons.person),
+            ),
             label: 'Profil',
           ),
         ],

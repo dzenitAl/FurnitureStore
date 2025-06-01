@@ -9,8 +9,7 @@ import 'package:table_calendar/table_calendar.dart';
 class CustomReservationDetailScreen extends StatefulWidget {
   final CustomFurnitureReservationModel? reservation;
 
-  const CustomReservationDetailScreen({Key? key, this.reservation})
-      : super(key: key);
+  const CustomReservationDetailScreen({super.key, this.reservation});
 
   @override
   _CustomReservationDetailScreenState createState() =>
@@ -143,7 +142,7 @@ class _CustomReservationDetailScreenState
                                   reservation.reservationDate ?? DateTime.now(),
                               firstDay: DateTime(2000),
                               lastDay: DateTime(2100),
-                              headerStyle: HeaderStyle(
+                              headerStyle: const HeaderStyle(
                                 titleCentered: true,
                                 formatButtonVisible: false,
                                 leftChevronVisible: false,
@@ -170,7 +169,7 @@ class _CustomReservationDetailScreenState
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.0),
                         border: Border.all(
-                          color: Color(0xFF2C5C7F),
+                          color: const Color(0xFF2C5C7F),
                           width: 2,
                         ),
                       ),

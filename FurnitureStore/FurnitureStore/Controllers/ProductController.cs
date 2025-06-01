@@ -14,7 +14,7 @@ namespace FurnitureStore.Controllers
 
         }
         [HttpGet("{id}/recommend")]
-        public virtual List<Models.Product.Product> Recommend(int id)
+        public virtual List<Models.Product.Product> Recommend(long id)
         {
             return (_service as IProductService).Recommend(id);
         }

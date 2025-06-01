@@ -135,7 +135,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
           suffix: IconButton(
             icon: const Icon(Icons.close),
             onPressed: () {
@@ -169,7 +169,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         actions: [
           if (widget.report == null) // Prikaz dugmeta samo kada je dodavanje
             IconButton(
-              icon: Icon(Icons.save),
+              icon: const Icon(Icons.save),
               onPressed: _saveReport,
             ),
         ],
@@ -184,19 +184,19 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               if (widget.report != null) ...[
                 Text(
                   'Datum Generisanja: ${DateFormat('d.M.yyyy HH:mm:ss').format(widget.report!.generationDate ?? DateTime.now())}',
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
               ],
               TextFormField(
                 controller: _contentController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     labelText: 'Sadržaj', border: OutlineInputBorder()),
                 maxLines: 4,
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Polje je obavezno' : null,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -213,14 +213,14 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                           _selectedMonth = value!;
                         });
                       },
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                           labelText: 'Mesec', border: OutlineInputBorder()),
                       validator: (value) => value == null || value.isEmpty
                           ? 'Polje je obavezno'
                           : null,
                     ),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _selectedYear,
@@ -235,7 +235,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                           _selectedYear = value!;
                         });
                       },
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                           labelText: 'Godina', border: OutlineInputBorder()),
                       validator: (value) => value == null || value.isEmpty
                           ? 'Polje je obavezno'
@@ -244,7 +244,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               DropdownButtonFormField<ReportType>(
                 value: _selectedReportType,
                 items: _getReportTypeDropdownItems(),
@@ -253,19 +253,19 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     _selectedReportType = value!;
                   });
                 },
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     labelText: 'Tip Izveštaja', border: OutlineInputBorder()),
                 validator: (value) =>
                     value == null ? 'Polje je obavezno' : null,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildDropdownField('customerId', 'Korisnik', _selectedCustomerId,
                   (value) {
                 setState(() {
                   _selectedCustomerId = value;
                 });
               }),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (widget.report ==
                   null) // Prikaz dugmeta samo kada je dodavanje
                 Center(

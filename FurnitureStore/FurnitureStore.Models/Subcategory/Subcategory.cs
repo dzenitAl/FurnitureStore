@@ -7,6 +7,6 @@ namespace FurnitureStore.Models.Subcategory
         public string Name { get; set; }
         public long CategoryId { get; set; }
         public Category.Category Category { get; set; }
-
+        public long? ImageId { get; set; }
     }
 }

@@ -164,7 +164,7 @@ class _SubcategoryDetailScreenState extends State<SubcategoryDetailScreen> {
           await _subcategoryProvider.update(widget.subcategory!.id!, request);
         }
 
-        Navigator.of(context).pop(true);
+        Navigator.pop(context, true);
       } on Exception catch (e) {
         showDialog(
             context: context,

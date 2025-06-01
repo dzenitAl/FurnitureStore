@@ -6,6 +6,7 @@ import 'package:furniturestore_admin/models/search_result.dart';
 import 'package:furniturestore_admin/providers/account_provider.dart';
 import 'package:furniturestore_admin/providers/order_provider.dart';
 import 'package:furniturestore_admin/screens/order/order_detail_screen.dart';
+import 'package:furniturestore_admin/widgets/master_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -21,9 +22,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
   late AccountProvider _customerProvider;
   SearchResult<OrderModel>? orders;
   Map<String, String> customerNameMap = {};
-  TextEditingController _orderDateFilterController = TextEditingController();
-  TextEditingController _customerIdFilterController = TextEditingController();
-  TextEditingController _customerNameFilterController = TextEditingController();
+  final TextEditingController _orderDateFilterController =
+      TextEditingController();
+  final TextEditingController _customerIdFilterController =
+      TextEditingController();
+  final TextEditingController _customerNameFilterController =
+      TextEditingController();
 
   Delivery? _selectedDeliveryFilter;
 
@@ -37,11 +41,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   Future<void> _loadData({Map<String, String>? filters}) async {
     try {
-      // Povucite podatke sa servera
       var orderData = await _orderProvider.get(filter: filters);
       var customerResult = await _customerProvider.getAll();
 
-      // Filtriranje po dostavi
       if (filters != null && filters['delivery'] != null) {
         int deliveryFilter = int.parse(filters['delivery']!);
         orderData.result = orderData.result.where((order) {
@@ -49,7 +51,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
         }).toList();
       }
 
-      // Kreirajte mapu za ime kupca
       customerNameMap = {
         for (var customer in customerResult.result)
           if (customer.id != null) customer.id!: customer.fullName ?? ''
@@ -92,15 +93,15 @@ class _OrderListScreenState extends State<OrderListScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Narudžba odobrena'),
-            content: Text(
+            title: const Text('Narudžba odobrena'),
+            content: const Text(
                 'Ova narudžba je već odobrena i to se ne može promijeniti.'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -111,20 +112,20 @@ class _OrderListScreenState extends State<OrderListScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Odobri narudžbu'),
-            content: Text('Da li želite odobriti ovu narudžbu?'),
+            title: const Text('Odobri narudžbu'),
+            content: const Text('Da li želite odobriti ovu narudžbu?'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(false);
                 },
-                child: Text('Ne'),
+                child: const Text('Ne'),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(true);
                 },
-                child: Text('Da'),
+                child: const Text('Da'),
               ),
             ],
           );
@@ -143,12 +144,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
       if (order.id != null) {
         await _orderProvider.update(order.id!, order);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Order approval status updated')),
+          const SnackBar(content: Text('Order approval status updated')),
         );
         _loadData();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Order ID is null')),
+          const SnackBar(content: Text('Order ID is null')),
         );
       }
     } catch (e) {
@@ -172,15 +173,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Lista narudžbi"),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
+    return MasterScreenWidget(
+      title: "Lista narudžbi",
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text(
+            const Text(
               "Lista narudžbi",
               style: TextStyle(
                 fontSize: 24,
@@ -189,13 +188,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 fontFamily: 'Roboto',
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _customerNameFilterController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Filtriraj po imenu kupca',
                       labelStyle: TextStyle(color: Color(0xFF1D3557)),
                       border: OutlineInputBorder(
@@ -205,14 +204,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         borderSide: BorderSide(color: Color(0xFF1D3557)),
                       ),
                     ),
-                    style: TextStyle(color: Color(0xFF1D3557)),
+                    style: const TextStyle(color: Color(0xFF1D3557)),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<Delivery>(
                     value: _selectedDeliveryFilter,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Filtriraj po dostavi',
                       labelStyle: TextStyle(color: Color(0xFF1D3557)),
                       border: OutlineInputBorder(
@@ -227,7 +226,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         value: delivery,
                         child: Text(
                           delivery.displayName,
-                          style: TextStyle(color: Color(0xFF1D3557)),
+                          style: const TextStyle(color: Color(0xFF1D3557)),
                         ),
                       );
                     }).toList(),
@@ -238,37 +237,37 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     },
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: _applyFilters,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Color(0xFFF4A258),
-                    padding:
-                        EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                    backgroundColor: const Color(0xFFF4A258),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 24.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: Text("Pretraga"),
+                  child: const Text("Pretraga"),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: _resetFilters,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Color(0xFF1D3557),
-                    padding:
-                        EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                    backgroundColor: const Color(0xFF1D3557),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 24.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: Text("Poništi filtere"),
+                  child: const Text("Poništi filtere"),
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
@@ -394,14 +393,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                   },
                                   style: ElevatedButton.styleFrom(
                                     foregroundColor: Colors.white,
-                                    backgroundColor: Color(0xFF1D3557),
-                                    padding: EdgeInsets.symmetric(
+                                    backgroundColor: const Color(0xFF1D3557),
+                                    padding: const EdgeInsets.symmetric(
                                         vertical: 8.0, horizontal: 16.0),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                   ),
-                                  child: Text("Detaljni prikaz"),
+                                  child: const Text("Detaljni prikaz"),
                                 ),
                               ),
                               DataCell(

@@ -16,7 +16,8 @@ class WishListListScreen extends StatefulWidget {
 class _WishListListScreenState extends State<WishListListScreen> {
   late WishListProvider _wishListProvider;
   SearchResult<WishListModel>? result;
-  TextEditingController _customerIdFilterController = TextEditingController();
+  final TextEditingController _customerIdFilterController =
+      TextEditingController();
 
   @override
   void didChangeDependencies() {
@@ -52,45 +53,49 @@ class _WishListListScreenState extends State<WishListListScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreenWidget(
-      titleWidget: Text("Wish List"),
+      titleWidget: const Text("Wish List"),
       child: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text("Wish List", style: TextStyle(fontSize: 24)),
-            SizedBox(height: 8),
+            const Text("Wish List", style: TextStyle(fontSize: 24)),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _customerIdFilterController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Filter by Customer ID',
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: _applyFilters,
-                  child: Text("Search"),
+                  child: const Text("Search"),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: () async {
-                    Navigator.of(context).push(
+                    final result = await Navigator.push(
+                      context,
                       MaterialPageRoute(
-                        builder: (context) => WishListDetailScreen(
+                        builder: (context) => const WishListDetailScreen(
                           wishList: null,
                         ),
                       ),
                     );
+                    if (result == true) {
+                      _loadData();
+                    }
                   },
-                  child: Text("Add New Wish List"),
+                  child: const Text("Add New Wish List"),
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
@@ -104,9 +109,10 @@ class _WishListListScreenState extends State<WishListListScreen> {
                     ],
                     rows: result?.result.map((WishListModel wishList) {
                           return DataRow(
-                              onSelectChanged: (selected) {
+                              onSelectChanged: (selected) async {
                                 if (selected == true) {
-                                  Navigator.of(context).push(
+                                  final result = await Navigator.push(
+                                    context,
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           WishListDetailScreen(
@@ -114,6 +120,9 @@ class _WishListListScreenState extends State<WishListListScreen> {
                                       ),
                                     ),
                                   );
+                                  if (result == true) {
+                                    _loadData();
+                                  }
                                 }
                               },
                               cells: [

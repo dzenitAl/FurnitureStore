@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:furniturestore_admin/models/enums/delivery.dart';
 import 'package:furniturestore_admin/models/order/order.dart';
 import 'package:furniturestore_admin/providers/order_provider.dart';
@@ -10,16 +9,15 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  final OrderModel? order;
+  OrderModel? order;
 
-  OrderDetailScreen({Key? key, this.order}) : super(key: key);
+  OrderDetailScreen({super.key, this.order});
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  final _formKey = GlobalKey<FormBuilderState>();
   late OrderProvider _orderProvider;
   late AccountProvider _accountProvider;
   late Map<String, String> customerNameMap;
@@ -35,19 +33,61 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _initialLoad() async {
-    try {
-      var customerResult = await _accountProvider.getAll();
-      customerNameMap = {
-        for (var customer in customerResult.result)
-          if (customer.id != null) customer.id!: customer.fullName ?? ''
-      };
-    } catch (e) {
-      customerNameMap = {};
-    }
-
     setState(() {
-      isLoading = false;
+      isLoading = true;
     });
+
+    try {
+      try {
+        var customerResult = await _accountProvider.getAll();
+        customerNameMap = {
+          for (var customer in customerResult.result)
+            if (customer.id != null) customer.id!: customer.fullName ?? ''
+        };
+      } catch (e) {
+        print("Greška pri učitavanju korisnika: $e");
+        customerNameMap = {};
+      }
+
+      if (widget.order?.id != null) {
+        try {
+          print("Dohvaćam detalje za narudžbu ID: ${widget.order!.id}");
+          var orderWithItems =
+              await _orderProvider.getOrderDetails(widget.order!.id!);
+
+          if (orderWithItems != null) {
+            setState(() {
+              widget.order = orderWithItems;
+            });
+            print("Uspješno učitani detalji narudžbe");
+          } else {
+            print("Nije moguće dobiti detalje narudžbe - API vratio null");
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Nije moguće dohvatiti detalje narudžbe'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } catch (e) {
+          print("Greška pri dohvaćanju detalja narudžbe: $e");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Greška: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        print("ID narudžbe je null, ne mogu dohvatiti detalje");
+      }
+    } catch (e) {
+      print("Opća greška pri učitavanju: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Delivery? getDeliveryById(int? id) {
@@ -58,10 +98,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreenWidget(
-      child:
-          isLoading ? Center(child: CircularProgressIndicator()) : _buildForm(),
       showBackButton: true,
       title: 'Detalji narudžbe',
+      child: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildForm(),
     );
   }
 
@@ -69,131 +110,39 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Expanded(
           child: Row(
             children: [
               Expanded(
-                flex: 1,
+                flex: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 2,
-                          blurRadius: 5,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 100,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildDetailRow('Datum narudžbe',
-                            _formatDateTime(widget.order?.orderDate)),
-                        SizedBox(height: 8),
-                        _buildDetailRow('Ukupna cijena',
-                            widget.order?.totalPrice?.toString() ?? ''),
-                        SizedBox(height: 8),
-                        _buildDetailRow(
-                            'Dostava',
-                            getDeliveryById(widget.order?.delivery)
-                                    ?.displayName ??
-                                ''),
-                        SizedBox(height: 8),
-                        _buildDetailRow(
-                            'Korisnik',
-                            customerNameMap[widget.order?.customerId ?? ''] ??
-                                'Nepoznato'),
-                        SizedBox(height: 8),
-                        _buildDetailRow('Odobreno',
-                            widget.order?.isApproved == true ? 'Da' : 'Ne'),
-                        SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.all(16.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                child: SingleChildScrollView(
-                                  child: TableCalendar(
-                                    firstDay: DateTime.utc(2000, 1, 1),
-                                    lastDay: DateTime.utc(2100, 12, 31),
-                                    focusedDay: widget.order?.orderDate ??
-                                        DateTime.now(),
-                                    selectedDayPredicate: (day) =>
-                                        isSameDay(day, widget.order?.orderDate),
-                                    headerStyle: HeaderStyle(
-                                      titleCentered: true,
-                                      formatButtonVisible: false,
-                                      leftChevronVisible: false,
-                                      rightChevronVisible: false,
-                                    ),
-                                    calendarStyle: CalendarStyle(
-                                      selectedDecoration: BoxDecoration(
-                                        color: Colors.blue,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      todayDecoration: BoxDecoration(
-                                        color: Colors.blue.withOpacity(0.5),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      outsideDaysVisible: false,
-                                    ),
-                                    onPageChanged: (focusedDay) {
-                                      setState(() {});
-                                    },
-                                    onDaySelected: (selectedDay, focusedDay) {},
-                                  ),
-                                ),
-                              ),
-                            ],
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            "assets/images/reservation_photo.jpg",
+                            fit: BoxFit.cover,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDetailBox(),
+                    ],
                   ),
                 ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 flex: 1,
-                child: Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      "assets/images/reservation_photo.jpg",
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+                child: _buildCalendar(),
               ),
             ],
           ),
@@ -202,67 +151,138 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
+  Widget _buildDetailBox() {
+    bool hasBasicOrderData = widget.order?.id != null;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!hasBasicOrderData)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "Podaci o narudžbi nisu dostupni",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            )
+          else ...[
+            _buildDetailRow(
+                'Datum narudžbe', _formatDateTime(widget.order?.orderDate)),
+            const SizedBox(height: 8),
+            _buildDetailRow('Ukupna cijena',
+                '${widget.order?.totalPrice?.toString() ?? ''} KM'),
+            const SizedBox(height: 8),
+            _buildDetailRow('Dostava',
+                getDeliveryById(widget.order?.delivery)?.displayName ?? ''),
+            const SizedBox(height: 8),
+            _buildDetailRow('Korisnik',
+                customerNameMap[widget.order?.customerId ?? ''] ?? 'Nepoznato'),
+            const SizedBox(height: 8),
+            _buildDetailRow(
+                'Odobreno', widget.order?.isApproved == true ? 'Da' : 'Ne'),
+            const SizedBox(height: 20),
+            const Text(
+              "Detalji narudžbe",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1D3557),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildOrderDetailsTable(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCalendar() {
+    return TableCalendar(
+      firstDay: DateTime.utc(2020, 1, 1),
+      lastDay: DateTime.utc(2030, 12, 31),
+      focusedDay: DateTime.now(),
+      calendarFormat: CalendarFormat.month,
+    );
+  }
+
+  Widget _buildOrderDetailsTable() {
+    if (widget.order?.orderItems == null || widget.order!.orderItems!.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(Icons.info_outline, color: Colors.orange, size: 32),
+              SizedBox(height: 8),
+              Text(
+                "Nema proizvoda u narudžbi",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              SizedBox(height: 4),
+              Text(
+                "Moguće je da stavke nisu učitane s API-ja",
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return DataTable(
+      columns: const [
+        DataColumn(label: Text("Naziv proizvoda")),
+        DataColumn(label: Text("Količina")),
+        DataColumn(label: Text("Cijena")),
+      ],
+      rows: widget.order!.orderItems!.map((item) {
+        return DataRow(cells: [
+          DataCell(Text(item.productName ?? "Nepoznato")),
+          DataCell(Text(item.quantity.toString())),
+          DataCell(Text("${item.price} KM")),
+        ]);
+      }).toList(),
+    );
+  }
+
   Widget _buildDetailRow(String label, String value) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '$label:',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Color(0xFF1D3557),
-          ),
-        ),
-        SizedBox(width: 8),
+        Text('$label:',
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Color(0xFF1D3557))),
+        const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF2C5C7F),
-            ),
-          ),
-        ),
+            child: Text(value,
+                style:
+                    const TextStyle(fontSize: 16, color: Color(0xFF2C5C7F)))),
       ],
     );
   }
 
   String _formatDateTime(DateTime? dateTime) {
-    if (dateTime == null) {
-      return '';
-    }
-    return DateFormat('d.M.yyyy HH:mm:ss').format(dateTime);
-  }
-
-  void _onSubmit() async {
-    if (_formKey.currentState?.saveAndValidate() ?? false) {
-      final formData = _formKey.currentState?.value;
-      print('Form Data: $formData');
-
-      var request = new Map.from(_formKey.currentState!.value);
-
-      try {
-        if (widget.order == null) {
-          await _orderProvider.insert(request);
-        } else {
-          await _orderProvider.update(widget.order!.id!, request);
-        }
-      } on Exception catch (e) {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-                  title: Text("Greška"),
-                  content: Text(e.toString()),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text("Uredu"))
-                  ],
-                ));
-      }
-    } else {
-      print('Validacija nije uspjela');
-    }
+    if (dateTime == null) return 'Nije postavljeno';
+    return DateFormat('dd.MM.yyyy HH:mm').format(dateTime);
   }
 }

@@ -31,7 +31,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return data;
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -49,7 +49,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return AccountModel.fromJson(data);
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -60,7 +60,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
     var jsonRequest = jsonEncode(request);
     var response = await http.put(uri, headers: headers, body: jsonRequest);
     if (!isValidResponse(response)) {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -76,7 +76,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return AccountModel.fromJson(data);
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -91,7 +91,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return AccountModel.fromJson(data);
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -119,7 +119,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
 
       return result;
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -134,7 +134,7 @@ class AccountProvider extends BaseProvider<AccountModel> {
       var data = jsonDecode(response.body);
       return AccountModel.fromJson(data);
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Unknown error");
     }
   }
 
@@ -161,6 +161,27 @@ class AccountProvider extends BaseProvider<AccountModel> {
       }
     } catch (e) {
       throw Exception('Failed to load cities');
+    }
+  }
+
+  Future<bool> changePassword(String currentPassword, String newPassword, String confirmNewPassword) async {
+    var url = "${BaseProvider.baseUrl}Account/change-password";
+    var uri = Uri.parse(url);
+    var headers = createAuthorizationHeaders();
+    
+    var request = {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+      'confirmNewPassword': confirmNewPassword
+    };
+    
+    var jsonRequest = jsonEncode(request);
+    var response = await http.post(uri, headers: headers, body: jsonRequest);
+    
+    if (isValidResponse(response)) {
+      return true;
+    } else {
+      throw Exception("Failed to change password");
     }
   }
 }

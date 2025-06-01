@@ -1,18 +1,26 @@
+using AutoMapper;
 using FurnitureStore.Configuration;
 using FurnitureStore.Filters;
+using FurnitureStore.Services;
 using FurnitureStore.Services.Database;
 using FurnitureStore.Services.Interfaces;
 using FurnitureStore.Services.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 
 builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<ISubcategoryService, SubcategoryService>();
-builder.Services.AddTransient<IProductService, ProductService>();
+builder.Services.AddTransient<IProductService>((serviceProvider) => {
+    var context = serviceProvider.GetRequiredService<AppDbContext>();
+    var mapper = serviceProvider.GetRequiredService<IMapper>();
+    var logger = serviceProvider.GetRequiredService<ILogger<ProductService>>();
+    var imagesDirectory = Path.Combine(builder.Environment.WebRootPath, "images");
+    return new ProductService(context, mapper, logger, imagesDirectory);
+});
 builder.Services.AddTransient<IProductPictureService, ProductPictureService>();
 builder.Services.AddTransient<IProductReservationService, ProductReservationService>();
 builder.Services.AddTransient<IProductReservationItemService, ProductReservationItemService>();
@@ -33,9 +41,12 @@ builder.Services.AddTransient<IWishListService, WishListService>();
 builder.Services.AddControllers(x =>
 {
     x.Filters.Add<ErrorFilters>();
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -45,13 +56,6 @@ builder.Services.AddSwaggerConfiguration();
 builder.Services.AddAutoMapper(typeof(ICityService));
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -64,7 +68,26 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseStaticFiles(); 
+
+// Enable static files middleware
+app.UseStaticFiles();
+
+// Ensure images directory exists
+var webRootPath = app.Environment.WebRootPath;
+var imagesPath = Path.Combine(webRootPath, "images");
+
+if (!Directory.Exists(imagesPath))
+{
+    try
+    {
+        Directory.CreateDirectory(imagesPath);
+        Console.WriteLine($"Created directory: {imagesPath}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error creating directory: {ex.Message}");
+    }
+}
 
 app.MapControllers();
 app.SeedData();

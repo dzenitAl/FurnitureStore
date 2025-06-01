@@ -58,6 +58,21 @@ class WishList {
 
 class Order {
   static final List<dynamic> _orderItems = [];
+  static final List<Function> _listeners = [];
+
+  static void addListener(Function listener) {
+    _listeners.add(listener);
+  }
+
+  static void removeListener(Function listener) {
+    _listeners.remove(listener);
+  }
+
+  static void _notifyListeners() {
+    for (var listener in _listeners) {
+      listener();
+    }
+  }
 
   static List<dynamic> getOrderItems() {
     return _orderItems;
@@ -65,34 +80,36 @@ class Order {
 
   static void clearOrder() {
     _orderItems.clear();
+    _notifyListeners();
   }
 
   static void addProductToOrder(ProductModel product) {
     _orderItems.add(product);
+    _notifyListeners();
   }
 
   static void removeProductFromOrder(ProductModel product) {
     _orderItems.remove(product);
+    _notifyListeners();
   }
 
   static List<ProductModel> getProductItems() {
-    return _orderItems
-        .where((item) => item is ProductModel)
-        .cast<ProductModel>()
-        .toList();
+    return _orderItems.whereType<ProductModel>().cast<ProductModel>().toList();
   }
 
   static void addGiftCardToOrder(GiftCardModel giftCard) {
     _orderItems.add(giftCard);
+    _notifyListeners();
   }
 
   static void removeGiftCardFromOrder(GiftCardModel giftCard) {
     _orderItems.remove(giftCard);
+    _notifyListeners();
   }
 
   static List<GiftCardModel> getGiftCardItems() {
     return _orderItems
-        .where((item) => item is GiftCardModel)
+        .whereType<GiftCardModel>()
         .cast<GiftCardModel>()
         .toList();
   }

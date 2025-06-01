@@ -15,7 +15,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 class PromotionDetailScreen extends StatefulWidget {
   final PromotionModel? promotion;
 
-  const PromotionDetailScreen({Key? key, this.promotion}) : super(key: key);
+  const PromotionDetailScreen({super.key, this.promotion});
 
   @override
   _PromotionDetailScreenState createState() => _PromotionDetailScreenState();
@@ -31,6 +31,7 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
   SearchResult<ProductModel>? productResult;
   bool isLoading = true;
   List<int?> _selectedProducts = [];
+  dynamic currentUser;
 
   @override
   void didChangeDependencies() {
@@ -46,6 +47,7 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
     try {
       adminResult = await _accountProvider.getAll(filter: {'userTypes': 1});
       productResult = await _productProvider.get();
+      currentUser = _accountProvider.getCurrentUser();
 
       if (widget.promotion != null) {
         _selectedProducts =
@@ -88,136 +90,152 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: isLoading
-            ? Center(child: CircularProgressIndicator())
-            : Row(
-                children: [
-                  Expanded(
-                    flex: 6,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          "assets/images/subcategory_detail_photo.jpg",
-                          fit: BoxFit.cover,
+            ? const Center(child: CircularProgressIndicator())
+            : LayoutBuilder(builder: (context, constraints) {
+                bool isSmallScreen = constraints.maxWidth < 1000;
+
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: isSmallScreen ? 3 : 6,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            "assets/images/subcategory_detail_photo.jpg",
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    flex: 4,
-                    child: Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: FormBuilder(
-                        key: _formKey,
-                        initialValue: _initialValue,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.promotion == null
-                                    ? 'Nova promocija'
-                                    : 'Detalji o promociji',
-                                style:
-                                    Theme.of(context).textTheme.headlineSmall,
-                              ),
-                              SizedBox(height: 20),
-                              const CustomTextField(
-                                  name: 'heading',
-                                  label: 'Naslov',
-                                  isRequired: true),
-                              const CustomTextField(
-                                  name: 'content',
-                                  label: 'Sadržaj',
-                                  isRequired: true,
-                                  maxLines: 3),
-                              CustomDropdownField(
-                                name: 'adminId',
-                                label: 'Administrator',
-                                isRequired: true,
-                                formKey: _formKey,
-                                items: adminResult?.result.map((admin) {
-                                      return DropdownMenuItem<String>(
-                                        alignment: AlignmentDirectional.center,
-                                        value: admin.id,
-                                        child: Text(admin.fullName ?? ''),
-                                      );
-                                    }).toList() ??
-                                    [],
-                              ),
-                              SizedBox(height: 20),
-                              DropdownSearch<ProductModel>.multiSelection(
-                                items: productResult?.result ?? [],
-                                selectedItems: _selectedProducts.map((id) {
-                                  return productResult!.result.firstWhere(
-                                      (product) => product.id == id);
-                                }).toList(),
-                                itemAsString: (ProductModel? product) =>
-                                    product?.name ?? '',
-                                onChanged: (List<ProductModel>? products) {
-                                  setState(() {
-                                    _selectedProducts =
-                                        products?.map((p) => p.id).toList() ??
-                                            [];
-                                  });
-                                },
-                                dropdownBuilder: (context, selectedItems) {
-                                  return Wrap(
-                                    children: selectedItems.map((product) {
-                                      return Chip(
-                                        label: Text(product.name ?? ''),
-                                        onDeleted: () {
-                                          setState(() {
-                                            _selectedProducts
-                                                .remove(product.id);
-                                          });
-                                        },
-                                      );
-                                    }).toList(),
-                                  );
-                                },
-                              ),
-                              SizedBox(height: 20),
-                              Center(
-                                child: ElevatedButton(
-                                  onPressed: _savePromotion,
-                                  style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    backgroundColor: Color(0xFFF4A258),
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 16.0, horizontal: 32.0),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: Text(
-                                      widget.promotion == null
-                                          ? 'Dodaj'
-                                          : 'Sačuvaj',
-                                      style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: isSmallScreen ? 7 : 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.2),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: FormBuilder(
+                          key: _formKey,
+                          initialValue: _initialValue,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.promotion == null
+                                      ? 'Nova promocija'
+                                      : 'Detalji o promociji',
+                                  style:
+                                      Theme.of(context).textTheme.headlineSmall,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 20),
+                                const CustomTextField(
+                                    name: 'heading',
+                                    label: 'Naslov',
+                                    isRequired: true),
+                                const CustomTextField(
+                                    name: 'content',
+                                    label: 'Sadržaj',
+                                    isRequired: true,
+                                    maxLines: 3),
+                                const SizedBox(height: 20),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  child: Text(
+                                    'Dodaj proizvode za ovu promociju',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: DropdownSearch<
+                                      ProductModel>.multiSelection(
+                                    items: productResult?.result ?? [],
+                                    selectedItems: _selectedProducts.map((id) {
+                                      return productResult!.result.firstWhere(
+                                          (product) => product.id == id);
+                                    }).toList(),
+                                    itemAsString: (ProductModel? product) =>
+                                        product?.name ?? '',
+                                    onChanged: (List<ProductModel>? products) {
+                                      setState(() {
+                                        _selectedProducts = products
+                                                ?.map((p) => p.id)
+                                                .toList() ??
+                                            [];
+                                      });
+                                    },
+                                    dropdownBuilder: (context, selectedItems) {
+                                      return SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                            minWidth: 500,
+                                            maxWidth: 600,
+                                          ),
+                                          child: Wrap(
+                                            children:
+                                                selectedItems.map((product) {
+                                              return Chip(
+                                                label: Text(product.name ?? ''),
+                                                onDeleted: () {
+                                                  setState(() {
+                                                    _selectedProducts
+                                                        .remove(product.id);
+                                                  });
+                                                },
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Center(
+                                  child: ElevatedButton(
+                                    onPressed: _savePromotion,
+                                    style: ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      backgroundColor: const Color(0xFFF4A258),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16.0, horizontal: 32.0),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Text(
+                                        widget.promotion == null
+                                            ? 'Dodaj'
+                                            : 'Sačuvaj',
+                                        style: const TextStyle(fontSize: 16)),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              }),
       ),
     );
   }
@@ -261,19 +279,20 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
       var formValue = _formKey.currentState?.value;
 
       List<int?> selectedProductIds = _selectedProducts;
+
       print(selectedProductIds);
-      var request2 = {
+      var request = {
         'heading': formValue!['heading'],
         'content': formValue['content'],
-        'adminId': formValue['adminId'],
+        'adminId': currentUser?.nameid,
         'productIds': selectedProductIds,
       };
 
       try {
         if (widget.promotion == null) {
-          await _promotionProvider.insert(request2);
+          await _promotionProvider.insert(request);
         } else {
-          await _promotionProvider.update(widget.promotion!.id!, request2);
+          await _promotionProvider.update(widget.promotion!.id!, request);
         }
 
         Navigator.pop(context, true);
@@ -281,12 +300,12 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
         showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: Text("Greška"),
+            title: const Text("Greška"),
             content: Text(e.toString()),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("OK"),
+                child: const Text("OK"),
               ),
             ],
           ),

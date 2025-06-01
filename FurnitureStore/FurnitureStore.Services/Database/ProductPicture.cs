@@ -1,5 +1,4 @@
-﻿
-using FurnitureStore.Services.Domain.Base;
+﻿using FurnitureStore.Services.Domain.Base;
 
 namespace FurnitureStore.Services.Database
 {
@@ -7,7 +6,9 @@ namespace FurnitureStore.Services.Database
     {
         public long Id { get; set; }
         public string ImagePath { get; set; } 
-        public long ProductId { get; set; }
-        public Product Product { get; set; }
-};
+        public long? ProductId { get; set; }                                                                                                                           
+        public Product? Product { get; set; }
+        public string EntityType { get; set; }
+        public long EntityId { get; set; }
+    }
 }

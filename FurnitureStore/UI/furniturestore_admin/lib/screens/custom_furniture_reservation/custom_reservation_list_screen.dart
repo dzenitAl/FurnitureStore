@@ -225,193 +225,210 @@ class _CustomFurnitureReservationListScreenState
                 scrollDirection: Axis.vertical,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    headingTextStyle: const TextStyle(
-                      color: Color(0xFF1D3557),
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto',
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: 1200,
+                      maxWidth: 1800,
                     ),
-                    dataTextStyle: const TextStyle(
-                      color: Color(0xFF1D3557),
-                      fontFamily: 'Roboto',
-                    ),
-                    columns: const [
-                      DataColumn(label: Text('Napomena')),
-                      DataColumn(label: Text('Datum rezervacije')),
-                      DataColumn(label: Text('Datum kreiranja')),
-                      DataColumn(label: Text('Ime')),
-                      DataColumn(label: Text('Prezime')),
-                      DataColumn(label: Text('Email')),
-                      DataColumn(label: Text('Telefon')),
-                      DataColumn(
-                        label: Text(
-                          'Odobreno',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1D3557),
-                            fontFamily: 'Roboto',
+                    child: DataTable(
+                      columnSpacing: 14.0,
+                      headingTextStyle: const TextStyle(
+                        color: Color(0xFF1D3557),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                      ),
+                      dataTextStyle: const TextStyle(
+                        color: Color(0xFF1D3557),
+                        fontFamily: 'Roboto',
+                      ),
+                      columns: const [
+                        DataColumn(label: Text('Napomena')),
+                        DataColumn(label: Text('Datum rezervacije')),
+                        DataColumn(label: Text('Datum kreiranja')),
+                        DataColumn(label: Text('Ime')),
+                        DataColumn(label: Text('Prezime')),
+                        DataColumn(label: Text('Email')),
+                        DataColumn(label: Text('Telefon')),
+                        DataColumn(
+                          label: Text(
+                            'Odobreno',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1D3557),
+                              fontFamily: 'Roboto',
+                            ),
                           ),
                         ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          '',
+                        DataColumn(
+                          label: Text(
+                            '',
+                          ),
                         ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          '',
+                        DataColumn(
+                          label: Text(
+                            '',
+                          ),
                         ),
-                      ),
-                    ],
-                    rows: result?.result
-                            .map((CustomFurnitureReservationModel reservation) {
-                          var userInfo =
-                              userMap[reservation.userId ?? ''] ?? {};
-                          return DataRow(
-                            onSelectChanged: (selected) {
-                              if (selected == true) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        CustomReservationDetailScreen(
-                                      reservation: reservation,
+                      ],
+                      rows: result?.result.map(
+                              (CustomFurnitureReservationModel reservation) {
+                            var userInfo =
+                                userMap[reservation.userId ?? ''] ?? {};
+                            return DataRow(
+                              onSelectChanged: (selected) {
+                                if (selected == true) {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CustomReservationDetailScreen(
+                                        reservation: reservation,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-                            },
-                            cells: [
-                              DataCell(
-                                Text(
-                                  reservation.note ?? '',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2C5C7F),
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  _formatDateTime(reservation.reservationDate),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2C5C7F),
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  _formatDateTime(reservation.createdDate),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2C5C7F),
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                              DataCell(Text(
-                                userInfo['firstName'] ?? '',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF2C5C7F),
-                                  fontFamily: 'Roboto',
-                                ),
-                              )),
-                              DataCell(Text(
-                                userInfo['lastName'] ?? '',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF2C5C7F),
-                                  fontFamily: 'Roboto',
-                                ),
-                              )),
-                              DataCell(Text(
-                                userInfo['email'] ?? '',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF2C5C7F),
-                                  fontFamily: 'Roboto',
-                                ),
-                              )),
-                              DataCell(Text(
-                                userInfo['phoneNumber'] ?? '',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF2C5C7F),
-                                  fontFamily: 'Roboto',
-                                ),
-                              )),
-                              DataCell(
-                                Row(
-                                  children: [
-                                    Text(
-                                      reservation.reservationStatus ?? false
-                                          ? 'Odobreno'
-                                          : 'Nije odobreno',
-                                      style: TextStyle(
+                                  );
+                                }
+                              },
+                              cells: [
+                                DataCell(
+                                  Container(
+                                    width: 220,
+                                    child: Text(
+                                      reservation.note ?? '',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.w500,
-                                        color: reservation.reservationStatus ??
-                                                false
-                                            ? const Color(0xFF70BC69)
-                                            : const Color(0xFFE91E63),
+                                        color: Color(0xFF2C5C7F),
                                         fontFamily: 'Roboto',
                                       ),
                                     ),
-                                    SizedBox(width: 2),
-                                    IconButton(
-                                      icon: Icon(
-                                        reservation.reservationStatus ?? false
-                                            ? Icons.check
-                                            : Icons.close,
-                                        color: reservation.reservationStatus ??
-                                                false
-                                            ? const Color(0xFF70BC69)
-                                            : const Color(0xFFE91E63),
-                                      ),
-                                      onPressed: () =>
-                                          _showApprovalDialog(reservation),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                              DataCell(
-                                reservation.reservationStatus ?? false
-                                    ? SizedBox.shrink()
-                                    : ElevatedButton(
+                                DataCell(
+                                  Text(
+                                    _formatDateTime(
+                                        reservation.reservationDate),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C5C7F),
+                                      fontFamily: 'Roboto',
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    _formatDateTime(reservation.createdDate),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C5C7F),
+                                      fontFamily: 'Roboto',
+                                    ),
+                                  ),
+                                ),
+                                DataCell(Text(
+                                  userInfo['firstName'] ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF2C5C7F),
+                                    fontFamily: 'Roboto',
+                                  ),
+                                )),
+                                DataCell(Text(
+                                  userInfo['lastName'] ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF2C5C7F),
+                                    fontFamily: 'Roboto',
+                                  ),
+                                )),
+                                DataCell(Text(
+                                  userInfo['email'] ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF2C5C7F),
+                                    fontFamily: 'Roboto',
+                                  ),
+                                )),
+                                DataCell(Text(
+                                  userInfo['phoneNumber'] ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF2C5C7F),
+                                    fontFamily: 'Roboto',
+                                  ),
+                                )),
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      Text(
+                                        reservation.reservationStatus ?? false
+                                            ? 'Odobreno'
+                                            : 'Nije odobreno',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color:
+                                              reservation.reservationStatus ??
+                                                      false
+                                                  ? const Color(0xFF70BC69)
+                                                  : const Color(0xFFE91E63),
+                                          fontFamily: 'Roboto',
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      IconButton(
+                                        icon: Icon(
+                                          reservation.reservationStatus ?? false
+                                              ? Icons.check
+                                              : Icons.close,
+                                          color:
+                                              reservation.reservationStatus ??
+                                                      false
+                                                  ? const Color(0xFF70BC69)
+                                                  : const Color(0xFFE91E63),
+                                        ),
                                         onPressed: () =>
                                             _showApprovalDialog(reservation),
-                                        style: ElevatedButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                          backgroundColor: Color(0xFFF4A258),
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 12.0, horizontal: 16.0),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                        ),
-                                        child: Text('Odobri'),
                                       ),
-                              ),
-                              DataCell(
-                                DeleteModal(
-                                  title: 'Potvrda brisanja',
-                                  content:
-                                      'Da li ste sigurni da želite obrisati ovu rezervaciju?',
-                                  onDelete: () async {
-                                    await _reservationProvider
-                                        .delete(reservation.id!);
-                                    _loadData();
-                                  },
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          );
-                        }).toList() ??
-                        [],
+                                DataCell(
+                                  reservation.reservationStatus ?? false
+                                      ? const SizedBox.shrink()
+                                      : ElevatedButton(
+                                          onPressed: () =>
+                                              _showApprovalDialog(reservation),
+                                          style: ElevatedButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                            backgroundColor:
+                                                const Color(0xFFF4A258),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12.0,
+                                                horizontal: 16.0),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                            ),
+                                          ),
+                                          child: const Text('Odobri'),
+                                        ),
+                                ),
+                                DataCell(
+                                  DeleteModal(
+                                    title: 'Potvrda brisanja',
+                                    content:
+                                        'Da li ste sigurni da želite obrisati ovu rezervaciju?',
+                                    onDelete: () async {
+                                      await _reservationProvider
+                                          .delete(reservation.id!);
+                                      _loadData();
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList() ??
+                          [],
+                    ),
                   ),
                 ),
               ),

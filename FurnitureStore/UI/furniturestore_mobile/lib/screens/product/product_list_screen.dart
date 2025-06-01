@@ -5,6 +5,8 @@ import 'package:furniturestore_mobile/models/product/product.dart';
 import 'package:furniturestore_mobile/screens/product/product_detail_screen.dart';
 import 'package:furniturestore_mobile/widgets/master_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:furniturestore_mobile/utils/utils.dart';
 
 class ProductListScreen extends StatefulWidget {
   final int? subcategoryId;
@@ -35,17 +37,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Future<void> _loadData() async {
     if (widget.promotionProducts != null) {
-      setState(() {
-        _allProducts = widget.promotionProducts;
-        _applyFilters();
-      });
+      _allProducts = widget.promotionProducts;
     } else {
       var productData = await _productProvider.get("");
-      setState(() {
-        _allProducts = productData.result;
-        _applyFilters();
-      });
+      _allProducts = productData.result;
     }
+
+    var subcategoryData = await _subcategoryProvider.get("");
+    _subcategoryIdToName.clear();
+    for (var subcategory in subcategoryData.result) {
+      _subcategoryIdToName[subcategory.id!] = subcategory.name!;
+    }
+
+    _applyFilters();
   }
 
   void _applyFilters() {
@@ -53,15 +57,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     setState(() {
       _filteredProducts = _allProducts?.where((product) {
-        bool matchesSubcategory = widget.subcategoryId == null ||
+        final matchesSubcategory = widget.subcategoryId == null ||
             product.subcategoryId == widget.subcategoryId;
-
-        bool matchesName =
+        final matchesName =
             product.name?.toLowerCase().contains(nameFilter) ?? true;
-
         return matchesSubcategory && matchesName;
       }).toList();
     });
+  }
+
+  String _formatPrice(double? price) {
+    final formatter =
+        NumberFormat.currency(locale: 'bs_BA', symbol: '', decimalDigits: 2);
+    return formatter.format(price ?? 0.0);
   }
 
   @override
@@ -88,7 +96,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     onChanged: (value) => _applyFilters(),
                   ),
                 ),
-                const SizedBox(width: 16),
               ],
             ),
             const SizedBox(height: 16),
@@ -97,45 +104,219 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   ? ListView.builder(
                       itemCount: _filteredProducts!.length,
                       itemBuilder: (context, index) {
-                        var product = _filteredProducts![index];
-                        return Card(
-                          elevation: 4,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            title: Text(
-                              product.name ?? '',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1D3557),
-                              ),
-                            ),
-                            subtitle: Text(
-                              _subcategoryIdToName[product.subcategoryId] ?? '',
-                              style: const TextStyle(color: Color(0xFF2C5C7F)),
-                            ),
-                            trailing: Text(
-                              "${product.price ?? 0.0} KM",
-                              style: const TextStyle(
-                                color: Color(0xFFF4A258),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ProductDetailScreen(
-                                    product: product,
-                                    imageFiles: [], // for now
-                                  ),
+                        final product = _filteredProducts![index];
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ProductDetailScreen(
+                                  product: product,
+                                  // imageFiles: const [],
                                 ),
-                              );
-                            },
+                              ),
+                            );
+                          },
+                          child: Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.grey[200],
+                                    ),
+                                    child: product.productPictures != null &&
+                                            product.productPictures!.isNotEmpty
+                                        ? ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            child: Builder(
+                                              builder: (context) {
+                                                // Debug prints
+                                                print(
+                                                    'Product: ${product.name}');
+                                                print(
+                                                    'Pictures length: ${product.productPictures?.length}');
+                                                print(
+                                                    'First picture ID: ${product.productPictures?.firstOrNull?.id}');
+
+                                                if (product.productPictures
+                                                        ?.firstOrNull?.id ==
+                                                    null) {
+                                                  return const Center(
+                                                    child: Icon(
+                                                      Icons.image_not_supported,
+                                                      color: Colors.grey,
+                                                      size: 40,
+                                                    ),
+                                                  );
+                                                }
+
+                                                return Image.network(
+                                                  'http://10.0.2.2:7015/api/ProductPicture/direct-image/${product.productPictures!.first.id}',
+                                                  fit: BoxFit.cover,
+                                                  loadingBuilder: (context,
+                                                      child, loadingProgress) {
+                                                    if (loadingProgress == null)
+                                                      return child;
+                                                    return Center(
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        value: loadingProgress
+                                                                    .expectedTotalBytes !=
+                                                                null
+                                                            ? loadingProgress
+                                                                    .cumulativeBytesLoaded /
+                                                                loadingProgress
+                                                                    .expectedTotalBytes!
+                                                            : null,
+                                                      ),
+                                                    );
+                                                  },
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) {
+                                                    print(
+                                                        'Error loading image: $error');
+                                                    return const Center(
+                                                      child: Icon(
+                                                        Icons.error_outline,
+                                                        color: Colors.grey,
+                                                        size: 40,
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          )
+                                        : const Center(
+                                            child: Icon(
+                                              Icons.image_not_supported,
+                                              color: Colors.grey,
+                                              size: 40,
+                                            ),
+                                          ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          product.name ?? '',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Color(0xFF1D3557),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          "Podkategorija: ${_subcategoryIdToName[product.subcategoryId] ?? '-'}",
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFF1D3557),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              product.isAvailableInStore == true
+                                                  ? Icons.check_circle_outline
+                                                  : Icons.cancel_outlined,
+                                              color:
+                                                  product.isAvailableInStore ==
+                                                          true
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                              size: 18,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              product.isAvailableInStore == true
+                                                  ? "Dostupno u trgovini"
+                                                  : "Nije dostupno u trgovini",
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color:
+                                                    product.isAvailableInStore ==
+                                                            true
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              product.isAvailableOnline == true
+                                                  ? Icons.check_circle_outline
+                                                  : Icons.cancel_outlined,
+                                              color:
+                                                  product.isAvailableOnline ==
+                                                          true
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                              size: 18,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              product.isAvailableOnline == true
+                                                  ? "Dostupno online"
+                                                  : "Nije dostupno online",
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color:
+                                                    product.isAvailableOnline ==
+                                                            true
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          "${_formatPrice(product.price)} KM",
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1D3557),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         );
                       },
                     )
-                  : const Center(child: Text("Nema pronađenih proizvoda")),
-            ),
+                  : const Center(
+                      child: Text(
+                        "Nema pronađenih proizvoda",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+            )
           ],
         ),
       ),
