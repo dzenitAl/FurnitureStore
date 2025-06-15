@@ -10,6 +10,6 @@ namespace FurnitureStore.Services.Database
         public long CategoryId { get; set; }
         public Category Category { get; set; }
         public virtual ICollection<Product> Products { get; set; } = new List<Product>();
-
+        public string ImagePath { get; set; }
     }
 }

@@ -29,12 +29,14 @@ abstract class BaseProvider<T> with ChangeNotifier {
       var response = await http.get(uri, headers: headers);
       if (isValidResponse(response)) {
         var data = jsonDecode(response.body);
+        print("API Response for $_endpoint: $data");
 
         var result = SearchResult<T>();
 
         result.count = data['count'];
 
         for (var item in data['result']) {
+          print("Processing item: $item");
           result.result.add(fromJson(item));
         }
 
@@ -43,6 +45,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
         throw Exception("Unknown error");
       }
     } catch (e) {
+      print("Error in get method: $e");
       if (e is http.ClientException) {
         throw Exception(
             "Network connection error. Please check your internet connection.");

@@ -33,6 +33,22 @@ namespace FurnitureStore.Services.Services
             query = query.Include("Admin");
             return base.AddInclude(query, search);
         }
-    }
 
+        public async Task<Models.Notification.Notification> MarkAsRead(long id)
+        {
+            var entity = await _context.Notifications.FindAsync(id);
+            if (entity == null)
+                throw new Exception("Notification not found");
+
+            var updateRequest = new NotificationUpdateRequest
+            {
+                IsRead = true,
+                Content = entity.Content,
+                Heading = entity.Heading,
+                CreatedAt = entity.CreatedAt
+            };
+
+            return await Update(id, updateRequest);
+        }
+    }
 }

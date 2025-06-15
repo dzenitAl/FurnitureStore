@@ -13,5 +13,6 @@ namespace FurnitureStore.Models.Promotion
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public long? ImageId { get; set; }
+        public string? ImagePath { get; set; }
     }
 }

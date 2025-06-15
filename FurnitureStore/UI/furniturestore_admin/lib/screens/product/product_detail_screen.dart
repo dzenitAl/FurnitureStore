@@ -704,19 +704,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            widget.product != null
-                ? 'Informacije o proizvodu ${widget.product!.name}'
-                : 'Dodaj informacije za novi proizvod',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1D3557),
-            ),
-          ),
-        ),
         const SizedBox(height: 8),
         Expanded(
           child: Row(
@@ -774,7 +761,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       errorText:
                                           'Barkod ne smije imati više od 15 znakova'),
                                   FormBuilderValidators.match(
-                                    r'^[a-zA-Z0-9]+$',
+                                    RegExp(r'^[a-zA-Z0-9]+$'),
                                     errorText:
                                         'Barkod smije sadržavati samo slova i brojeve',
                                   ),
@@ -827,7 +814,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 isRequired: false,
                                 validators: [
                                   FormBuilderValidators.match(
-                                    r'^\d+(\.\d+)?\s*x\s*\d+(\.\d+)?\s*x\s*\d+(\.\d+)?$',
+                                    RegExp(
+                                        r'^\d+(\.\d+)?\s*x\s*\d+(\.\d+)?\s*x\s*\d+(\.\d+)?$'),
                                     errorText:
                                         'Unesite dimenzije u formatu D x Š x V, npr. 200 x 100 x 50',
                                   ),
@@ -1085,25 +1073,5 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _buildForm(),
     );
-  }
-
-  void _debugImageDetails() {
-    if (_existingImages.isEmpty) {
-      _logDebug('No existing images to debug');
-      return;
-    }
-
-    _logDebug('========= Image Details Debug =========');
-    for (int i = 0; i < _existingImages.length; i++) {
-      final image = _existingImages[i];
-      _logDebug('Image #${i + 1}:');
-      _logDebug('  ID: ${image.id}');
-      _logDebug('  Path: ${image.imagePath}');
-      if (image.imagePath != null) {
-        final imageUrl = '$_baseUrl${image.imagePath}';
-        _logDebug('  Full URL: $imageUrl');
-      }
-      _logDebug('-----------------------------------');
-    }
   }
 }

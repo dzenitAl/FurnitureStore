@@ -12,5 +12,6 @@ namespace FurnitureStore.Services.Database
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+        public string ImagePath { get; set; }
     }
 }

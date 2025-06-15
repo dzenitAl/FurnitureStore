@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:furniturestore_mobile/models/decoration_item/decoration_item.dart';
 import 'package:furniturestore_mobile/models/product/product.dart';
 import 'package:furniturestore_mobile/models/product_reservation/product_reservation.dart';
 import 'package:furniturestore_mobile/providers/account_provider.dart';
@@ -29,7 +30,12 @@ class _ProductReservationListScreenState
       ProductReservationProvider();
 
   String? _currentUserId;
-  final reservations = ProductReservation.getReservedProducts();
+
+  List<dynamic> get reservations {
+    final products = ProductReservation.getReservedProducts();
+    final decorationItems = ProductReservation.getReservedDecorationItems();
+    return [...products, ...decorationItems];
+  }
 
   @override
   void initState() {
@@ -89,10 +95,14 @@ class _ProductReservationListScreenState
 
   @override
   Widget build(BuildContext context) {
-    final groupedReservations = <int, ProductModel>{};
+    final groupedReservations = <int, dynamic>{};
 
-    for (var product in reservations) {
-      groupedReservations[product.id ?? 0] = product;
+    for (var item in reservations) {
+      if (item is ProductModel) {
+        groupedReservations[item.id ?? 0] = item;
+      } else if (item is DecorationItemModel) {
+        groupedReservations[item.id ?? 0] = item;
+      }
     }
 
     return MasterScreenWidget(
@@ -137,10 +147,13 @@ class _ProductReservationListScreenState
                   ? ListView.builder(
                       itemCount: groupedReservations.length,
                       itemBuilder: (context, index) {
-                        final product =
+                        final item =
                             groupedReservations.values.elementAt(index);
-                        final quantity = ProductReservation.getProductQuantity(
-                            product.id ?? 0);
+                        final quantity = item is ProductModel
+                            ? ProductReservation.getProductQuantity(
+                                item.id ?? 0)
+                            : ProductReservation.getDecorationItemQuantity(
+                                item.id ?? 0);
 
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -152,13 +165,87 @@ class _ProductReservationListScreenState
                             padding: const EdgeInsets.all(16.0),
                             child: Row(
                               children: [
+                                Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey.shade400,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: item.productPictures != null &&
+                                          item.productPictures!.isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Image.network(
+                                            'http://10.0.2.2:7015/api/ProductPicture/direct-image/${item.productPictures!.first.id}',
+                                            fit: BoxFit.cover,
+                                            headers: {
+                                              'Authorization':
+                                                  'Bearer ${Authorization.token}'
+                                            },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Container(
+                                                decoration: BoxDecoration(
+                                                  color: const Color.fromARGB(
+                                                      255, 116, 143, 187),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.image_not_supported,
+                                                  size: 40,
+                                                  color: Colors.white,
+                                                ),
+                                              );
+                                            },
+                                            loadingBuilder: (context, child,
+                                                loadingProgress) {
+                                              if (loadingProgress == null)
+                                                return child;
+                                              return Container(
+                                                decoration: BoxDecoration(
+                                                  color: const Color.fromARGB(
+                                                      255, 116, 143, 187),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: const Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        )
+                                      : Container(
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromARGB(
+                                                255, 116, 143, 187),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: const Icon(
+                                            Icons.image_not_supported,
+                                            size: 40,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                ),
+                                const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        product.name ?? 'Nepoznat proizvod',
+                                        item.name ?? 'Nepoznat proizvod',
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -173,12 +260,16 @@ class _ProductReservationListScreenState
                                 IconButton(
                                   icon: const Icon(Icons.remove_circle,
                                       color: Colors.red),
-                                  onPressed: () {
-                                    setState(() {
-                                      ProductReservation
-                                          .removeProductFromReservation(
-                                              product);
-                                    });
+                                  onPressed: () async {
+                                    if (item is ProductModel) {
+                                      await ProductReservation
+                                          .removeProductFromReservation(item);
+                                    } else if (item is DecorationItemModel) {
+                                      await ProductReservation
+                                          .removeDecorationItemFromReservation(
+                                              item);
+                                    }
+                                    setState(() {});
                                   },
                                 ),
                               ],
@@ -208,7 +299,7 @@ class _ProductReservationListScreenState
   }
 
   void _openSubmitDialog() {
-    if (ProductReservation.getReservedProducts().isEmpty) {
+    if (reservations.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Lista rezervacija je prazna')),
       );
@@ -305,8 +396,13 @@ class _ProductReservationListScreenState
   Future<void> _submitReservationRequest() async {
     debugPrint('Napomena: $_note');
     debugPrint('Datum: $_reservationDate');
-    final List<int?> reservationItems =
-        reservations.map((item) => item.id).toList();
+    final List<int?> reservationItems = reservations
+        .map((item) => (item is ProductModel || item is DecorationItemModel)
+            ? item.id
+            : null)
+        .where((id) => id != null)
+        .cast<int?>()
+        .toList();
 
     final reservation = ProductReservationModel(
         notes: _note,

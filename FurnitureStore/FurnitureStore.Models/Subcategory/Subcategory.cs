@@ -8,5 +8,6 @@ namespace FurnitureStore.Models.Subcategory
         public long CategoryId { get; set; }
         public Category.Category Category { get; set; }
         public long? ImageId { get; set; }
+        public string? ImagePath { get; set; }
     }
 }

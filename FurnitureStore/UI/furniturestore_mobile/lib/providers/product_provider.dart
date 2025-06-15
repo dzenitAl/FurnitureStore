@@ -24,4 +24,20 @@ class ProductProvider extends BaseProvider<ProductModel> {
       throw Exception("Failed to fetch recommended products");
     }
   }
+
+  Future<List<ProductModel>> getProductsWithPictures(List<int> ids) async {
+    var url = "${BaseProvider.baseUrl}Product/with-pictures";
+    var uri = Uri.parse(url);
+    var headers = createAuthorizationHeaders();
+
+    var body = jsonEncode({"ids": ids});
+    var response = await http!.post(uri, headers: headers, body: body);
+
+    if (isValidResponse(response)) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => ProductModel.fromJson(json)).toList();
+    } else {
+      throw Exception("Failed to fetch products with pictures");
+    }
+  }
 }

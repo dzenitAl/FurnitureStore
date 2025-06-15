@@ -5,6 +5,7 @@ import 'package:furniturestore_admin/models/search_result.dart';
 import 'package:furniturestore_admin/providers/account_provider.dart';
 import 'package:furniturestore_admin/providers/promotion_provider.dart';
 import 'package:furniturestore_admin/screens/promotion/promotion_detail_screen.dart';
+import 'package:furniturestore_admin/utils/utils.dart';
 import 'package:furniturestore_admin/widgets/master_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -75,6 +76,56 @@ class _PromotionListScreenState extends State<PromotionListScreen> {
     _loadData(filters: {
       'heading': _nameFilterController.text,
     });
+  }
+
+  Widget _buildPromotionImage(PromotionModel promotion) {
+    if (promotion.imagePath == null || promotion.imagePath!.isEmpty) {
+      return Container(
+        width: 60,
+        height: 60,
+        color: Colors.grey[200],
+        child: const Icon(Icons.image_not_supported),
+      );
+    }
+
+    final imageUrl = promotion.imagePath!.startsWith('http')
+        ? promotion.imagePath!
+        : '$baseUrl${promotion.imagePath}';
+
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey[300]!,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        headers: {'Authorization': 'Bearer ${Authorization.token}'},
+        errorBuilder: (context, error, stackTrace) {
+          print("Error loading image: $error");
+          return Container(
+            color: Colors.grey[200],
+            child: const Icon(Icons.image_not_supported),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -166,6 +217,18 @@ class _PromotionListScreenState extends State<PromotionListScreen> {
                           columns: [
                             DataColumn(
                               label: SizedBox(
+                                width: 80,
+                                child: const Text(
+                                  'Slika',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1D3557),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.15,
                                 child: const Text(
                                   'Naslov',
@@ -241,6 +304,7 @@ class _PromotionListScreenState extends State<PromotionListScreen> {
                                     }
                                   },
                                   cells: [
+                                    DataCell(_buildPromotionImage(promotion)),
                                     DataCell(
                                       SizedBox(
                                         width:

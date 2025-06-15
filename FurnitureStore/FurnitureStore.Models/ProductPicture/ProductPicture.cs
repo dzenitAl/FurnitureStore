@@ -5,12 +5,13 @@ namespace FurnitureStore.Models.ProductPicture
     {
         public long Id { get; set; }
         public string ImagePath { get; set; }
-        public long ProductId { get; set; }
+        public long? ProductId { get; set; }
         public string EntityType { get; set; }
         public long EntityId { get; set; }
+        public long? DecorativeItemId { get; set; }
 
-
-        public Product.Product Product { get; set; }
+        public DecorativeItems.DecorativeItem? DecorativeItem { get; set; }
+        public Product.Product? Product { get; set; }
 
     }
 }

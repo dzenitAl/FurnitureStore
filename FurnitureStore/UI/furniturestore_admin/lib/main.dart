@@ -14,6 +14,7 @@ import 'package:furniturestore_admin/screens/product/product_list_screen.dart';
 import 'package:furniturestore_admin/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:furniturestore_admin/providers/decoration_item_provider.dart';
 
 void main() {
   runApp(MultiProvider(
@@ -29,6 +30,7 @@ void main() {
       ChangeNotifierProvider(create: (_) => ProductReservationProvider()),
       ChangeNotifierProvider(create: (_) => GiftCardProvider()),
       ChangeNotifierProvider(create: (_) => CustomReservationProvider()),
+      ChangeNotifierProvider(create: (_) => DecorationItemProvider()),
     ],
     child: const MyMaterialApp(),
   ));

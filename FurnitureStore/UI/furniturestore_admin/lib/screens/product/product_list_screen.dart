@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:furniturestore_admin/components/DeleteModal.dart';
 import 'package:furniturestore_admin/models/product/product.dart';
+import 'package:furniturestore_admin/models/product_pictures/product_pictures.dart';
 import 'package:furniturestore_admin/providers/product_provider.dart';
 import 'package:furniturestore_admin/providers/subcategory_provider.dart';
 import 'package:furniturestore_admin/screens/product/product_detail_screen.dart';
 import 'package:furniturestore_admin/utils/utils.dart';
 import 'package:furniturestore_admin/widgets/master_screen.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -24,6 +27,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   final TextEditingController _nameFilterController = TextEditingController();
   final TextEditingController _barcodeFilterController =
       TextEditingController();
+  final String _baseUrl = 'http://localhost:7015';
 
   bool _isLoading = false;
 
@@ -71,6 +75,96 @@ class _ProductListScreenState extends State<ProductListScreen> {
         return matchesName && matchesBarcode;
       }).toList();
     });
+  }
+
+  Future<bool> _checkImageAccessible(String url) async {
+    try {
+      final response = await http.head(
+        Uri.parse(url),
+        headers: {'Authorization': 'Bearer ${Authorization.token}'},
+      );
+      print('Image accessibility check for $url: ${response.statusCode}');
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (e) {
+      print('Error checking image accessibility: $e');
+      return false;
+    }
+  }
+
+  Widget _buildProductImage(ProductModel prod) {
+    return FutureBuilder<List<ProductPicturesModel>>(
+      future: _loadProductImages(prod.id!),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            width: 50,
+            height: 50,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Icon(Icons.image_not_supported);
+        }
+
+        final image = snapshot.data![0];
+        if (image.id == null) {
+          return const Icon(Icons.image_not_supported);
+        }
+
+        final directUrl =
+            '$_baseUrl/api/ProductPicture/direct-image/${image.id}';
+
+        return Container(
+          width: 50,
+          height: 50,
+          child: Image.network(
+            directUrl,
+            fit: BoxFit.cover,
+            headers: {'Authorization': 'Bearer ${Authorization.token}'},
+            errorBuilder: (context, error, stackTrace) {
+              if (image.imagePath != null && image.imagePath!.isNotEmpty) {
+                final pathUrl = '$_baseUrl${image.imagePath}';
+                return Image.network(
+                  pathUrl,
+                  fit: BoxFit.cover,
+                  headers: {'Authorization': 'Bearer ${Authorization.token}'},
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.image_not_supported),
+                );
+              }
+              return const Icon(Icons.image_not_supported);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Future<List<ProductPicturesModel>> _loadProductImages(int productId) async {
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${Authorization.token}'
+      };
+
+      final url = '$_baseUrl/api/ProductPicture/GetByProductId/$productId';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body) as List;
+        return jsonData
+            .map((item) => ProductPicturesModel.fromJson(item))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error loading images for product $productId: $e');
+      return [];
+    }
   }
 
   @override
@@ -185,10 +279,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           columns: const [
                             DataColumn(
                               label: Text(
-                                'Naziv',
+                                'Slika',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF1D3557)),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Naziv',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 67, 85, 111)),
                               ),
                             ),
                             DataColumn(
@@ -269,6 +371,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     }
                                   },
                                   cells: [
+                                    DataCell(_buildProductImage(prod)),
                                     DataCell(Text(
                                       prod.name ?? '',
                                       textAlign: TextAlign.center,

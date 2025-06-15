@@ -38,6 +38,8 @@ builder.Services.AddTransient<IGiftCardService, GiftCardService>();
 
 builder.Services.AddTransient<IWishListService, WishListService>();
 
+builder.Services.AddScoped<IDecorativeItemService, DecorativeItemService>();
+
 builder.Services.AddControllers(x =>
 {
     x.Filters.Add<ErrorFilters>();

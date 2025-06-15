@@ -10,6 +10,7 @@ class GiftCardModel {
   int? amount;
   DateTime? expiryDate;
   bool? isActivated;
+  String? imagePath;
 
   GiftCardModel({
     this.id,
@@ -18,6 +19,7 @@ class GiftCardModel {
     this.amount,
     this.expiryDate,
     this.isActivated,
+    this.imagePath,
   });
 
   void updateActivationStatus() {

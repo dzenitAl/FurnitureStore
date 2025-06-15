@@ -16,6 +16,8 @@ GiftCardModel _$GiftCardModelFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['expiryDate'] as String),
       isActivated: json['isActivated'] as bool?,
+      imagePath: json['imagePath'] as String?,
+      imageId: (json['imageId'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$GiftCardModelToJson(GiftCardModel instance) =>
@@ -26,4 +28,6 @@ Map<String, dynamic> _$GiftCardModelToJson(GiftCardModel instance) =>
       'amount': instance.amount,
       'expiryDate': instance.expiryDate?.toIso8601String(),
       'isActivated': instance.isActivated,
+      'imagePath': instance.imagePath,
+      'imageId': instance.imageId,
     };

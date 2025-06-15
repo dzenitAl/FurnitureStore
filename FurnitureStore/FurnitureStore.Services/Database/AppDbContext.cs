@@ -26,6 +26,7 @@ namespace FurnitureStore.Services.Database
         public virtual DbSet<ProductPicture> ProductPictures { get; set; }
         public virtual DbSet<Promotion> Promotions { get; set; }
         public virtual DbSet<GiftCard> GiftCards { get; set; }
+        public virtual DbSet<DecorativeItem> DecorativeItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -46,6 +47,7 @@ namespace FurnitureStore.Services.Database
             builder.ApplyConfiguration(new NotificationConfiguration());
             builder.ApplyConfiguration(new ReportConfiguration());
             builder.ApplyConfiguration(new GiftCardConfiguration());
+            builder.ApplyConfiguration(new DecorativeItemConfiguration());
 
         }
 

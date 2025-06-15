@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FurnitureStore.Models.SearchObjects;
 using FurnitureStore.Services.Database;
+using FurnitureStore.Services.Domain.Base;
 
 namespace FurnitureStore.Services.Services
 {
@@ -23,21 +24,17 @@ namespace FurnitureStore.Services.Services
 
             TDb entity = _mapper.Map<TDb>(insert);
 
+            if (entity is BaseEntity baseEntity)
+            {
+                baseEntity.CreatedAt = DateTime.UtcNow;
+            }
+
             set.Add(entity);
             await BeforeInsert(entity, insert);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-
-            }
-            catch (Exception ex)
-            {
-
-            }
+            await _context.SaveChangesAsync();
+            
             return _mapper.Map<T>(entity);
         }
-
 
         public virtual async Task<T> Update(TId id, TUpdate update)
         {
@@ -50,6 +47,5 @@ namespace FurnitureStore.Services.Services
             await _context.SaveChangesAsync();
             return _mapper.Map<T>(entity);
         }
-
     }
 }

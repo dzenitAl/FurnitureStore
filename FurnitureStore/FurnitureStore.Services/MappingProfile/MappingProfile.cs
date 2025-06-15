@@ -3,6 +3,7 @@ using FurnitureStore.Models.Account;
 using FurnitureStore.Models.Category;
 using FurnitureStore.Models.City;
 using FurnitureStore.Models.CustomFurnitureReservation;
+using FurnitureStore.Models.DecorativeItems;
 using FurnitureStore.Models.GiftCard;
 using FurnitureStore.Models.Notification;
 using FurnitureStore.Models.Order;
@@ -82,7 +83,9 @@ namespace FurnitureStore.Services.MappingProfile
             CreateMap<Database.User, UserResponse>();
             CreateMap<Database.Payment, Payment>();
             CreateMap<PaymentRequest, Database.Payment>();
-            
+            CreateMap<Database.DecorativeItem, DecorativeItem>()
+                .ForMember(dest => dest.Pictures, opt => opt.MapFrom(src => src.Pictures));
+            CreateMap<DecorativeItemsRequest, Database.DecorativeItem>();
 
             CreateMap<Database.ProductReservationItem, ProductReservationItem>()
        .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product));

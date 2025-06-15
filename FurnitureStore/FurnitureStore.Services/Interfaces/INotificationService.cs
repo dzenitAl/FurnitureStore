@@ -11,5 +11,6 @@ namespace FurnitureStore.Services.Interfaces
 {
     public interface INotificationService : ICRUDService<Models.Notification.Notification, NotificationSearchObject, NotificationInsertRequest, NotificationUpdateRequest, long>
     {
+        Task<Notification> MarkAsRead(long id);
     }
 }

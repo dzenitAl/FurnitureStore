@@ -202,6 +202,14 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
                           ),
                           DataColumn(
                             label: Text(
+                              'Slika',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1D3557)),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
                               'Kategorija',
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
@@ -213,65 +221,117 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
                             '',
                           )),
                         ],
-                        rows:
-                            result?.result.map((SubcategoryModel subcategory) {
-                                  return DataRow(
-                                    onSelectChanged: (selected) async {
-                                      if (selected == true) {
-                                        final result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                SubcategoryDetailScreen(
-                                                    subcategory: subcategory),
-                                          ),
-                                        );
-                                        if (result == true) {
-                                          _loadData();
-                                        }
-                                      }
-                                    },
-                                    cells: [
-                                      DataCell(
-                                        Text(
-                                          subcategory.name ?? '',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xFF2C5C7F),
-                                            fontFamily: 'Roboto',
-                                          ),
-                                        ),
+                        rows: result?.result
+                                .map((SubcategoryModel subcategory) {
+                              return DataRow(
+                                onSelectChanged: (selected) async {
+                                  if (selected == true) {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            SubcategoryDetailScreen(
+                                                subcategory: subcategory),
                                       ),
-                                      DataCell(
-                                        Text(
-                                          categoryIdToName[
-                                                  subcategory.categoryId] ??
-                                              '',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xFF2C5C7F),
-                                            fontFamily: 'Roboto',
-                                          ),
-                                        ),
+                                    );
+                                    if (result == true) {
+                                      _loadData();
+                                    }
+                                  }
+                                },
+                                cells: [
+                                  DataCell(
+                                    Text(
+                                      subcategory.name ?? '',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF2C5C7F),
+                                        fontFamily: 'Roboto',
                                       ),
-                                      DataCell(
-                                        DeleteModal(
-                                          title: 'Potvrda brisanja',
-                                          content:
-                                              'Da li ste sigurni da želite obrisati ovu potkategoriju?',
-                                          onDelete: () async {
-                                            await _subcategoryProvider
-                                                .delete(subcategory.id!);
-                                            _loadData();
-                                          },
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Container(
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey[300]!,
+                                          width: 1,
                                         ),
+                                        borderRadius: BorderRadius.circular(4),
                                       ),
-                                    ],
-                                  );
-                                }).toList() ??
-                                [],
+                                      child: subcategory.imagePath != null
+                                          ? Image.network(
+                                              subcategory.imagePath!
+                                                      .startsWith('http')
+                                                  ? subcategory.imagePath!
+                                                  : 'http://localhost:7015${subcategory.imagePath}',
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                return Container(
+                                                  color: Colors.grey[200],
+                                                  child: const Icon(Icons
+                                                      .image_not_supported),
+                                                );
+                                              },
+                                              loadingBuilder: (context, child,
+                                                  loadingProgress) {
+                                                if (loadingProgress == null)
+                                                  return child;
+                                                return Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    value: loadingProgress
+                                                                .expectedTotalBytes !=
+                                                            null
+                                                        ? loadingProgress
+                                                                .cumulativeBytesLoaded /
+                                                            loadingProgress
+                                                                .expectedTotalBytes!
+                                                        : null,
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : Container(
+                                              color: Colors.grey[200],
+                                              child: const Icon(
+                                                  Icons.image_not_supported),
+                                            ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      categoryIdToName[
+                                              subcategory.categoryId] ??
+                                          '',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF2C5C7F),
+                                        fontFamily: 'Roboto',
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    DeleteModal(
+                                      title: 'Potvrda brisanja',
+                                      content:
+                                          'Da li ste sigurni da želite obrisati ovu potkategoriju?',
+                                      onDelete: () async {
+                                        await _subcategoryProvider
+                                            .delete(subcategory.id!);
+                                        _loadData();
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList() ??
+                            [],
                       ),
                     ),
                   ),

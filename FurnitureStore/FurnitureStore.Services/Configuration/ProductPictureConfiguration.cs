@@ -11,10 +11,17 @@ namespace FurnitureStore.Services.Configuration
             builder.Property(u => u.Id).ValueGeneratedOnAdd();
             
             builder.Property(p => p.ProductId).IsRequired(false);
+            builder.Property(p => p.DecorativeItemId).IsRequired(false);
             
             builder.HasOne(p => p.Product)
                 .WithMany(c => c.ProductPictures)
                 .HasForeignKey(p => p.ProductId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            builder.HasOne(p => p.DecorativeItem)
+                .WithMany(d => d.Pictures)
+                .HasForeignKey(p => p.DecorativeItemId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired(false);
         }

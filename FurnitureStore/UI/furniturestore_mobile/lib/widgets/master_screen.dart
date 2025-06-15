@@ -3,6 +3,7 @@ import 'package:furniturestore_mobile/main.dart';
 import 'package:furniturestore_mobile/screens/account_profile/profile_screen.dart';
 import 'package:furniturestore_mobile/screens/category/category_list_screen.dart';
 import 'package:furniturestore_mobile/screens/custom_reservation/custom_reservation_overview.dart';
+import 'package:furniturestore_mobile/screens/decoration_item/decoration_item_list_screen.dart';
 import 'package:furniturestore_mobile/screens/gift_card/gift_card_list_screen.dart';
 import 'package:furniturestore_mobile/screens/home/home_screen.dart';
 import 'package:furniturestore_mobile/screens/notification/notification_list_screen.dart';
@@ -52,7 +53,7 @@ class _MasterScreenWidgetState extends State<MasterScreenWidget> {
 
   void _updateCartCount() {
     setState(() {
-      _cartItemCount = Order.getOrderItems().length;
+      _cartItemCount = Order.getItemCount();
     });
   }
 
@@ -193,6 +194,18 @@ class _MasterScreenWidgetState extends State<MasterScreenWidget> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (context) => const ProductListScreen()),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.home, color: Colors.white),
+                      title: const Text("Dekorativni artikli",
+                          style: TextStyle(color: Colors.white)),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const DecorationItemListScreen()),
                         );
                       },
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:furniturestore_mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:furniturestore_mobile/models/category/category.dart';
 import 'package:furniturestore_mobile/providers/category_provider.dart';
@@ -104,12 +105,60 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // const Icon(Icons.category, size: 50, color: Color(0xFF1D3557)),
-            Image.asset(
-              'assets/images/livingRoom.png',
-              width: 160,
-              height: 120,
-              fit: BoxFit.cover,
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.grey.shade400,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: category.imagePath != null &&
+                      category.imagePath!.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        category.imagePath!.startsWith('http')
+                            ? category.imagePath!
+                            : 'http://10.0.2.2:7015${category.imagePath}',
+                        height: 120,
+                        width: 160,
+                        fit: BoxFit.cover,
+                        headers: {
+                          'Authorization': 'Bearer ${Authorization.token}'
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/images/livingRoom.png',
+                            width: 160,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return SizedBox(
+                            height: 120,
+                            width: 160,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Image.asset(
+                      'assets/images/livingRoom.png',
+                      width: 160,
+                      height: 120,
+                      fit: BoxFit.cover,
+                    ),
             ),
             const SizedBox(height: 10),
             Text(

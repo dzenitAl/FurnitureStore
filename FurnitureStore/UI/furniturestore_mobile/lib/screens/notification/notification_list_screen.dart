@@ -5,6 +5,7 @@ import 'package:furniturestore_mobile/providers/notification_provider.dart';
 import 'package:furniturestore_mobile/widgets/master_screen.dart';
 import 'package:furniturestore_mobile/screens/notification/notification_detail_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class NotificationListScreen extends StatefulWidget {
   const NotificationListScreen({super.key});
@@ -27,7 +28,6 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
   Future<void> _loadData() async {
     try {
       var notificationData = await _notificationProvider.get("");
-      print("notificationData::: ${notificationData.result}");
 
       setState(() {
         result = SearchResult<NotificationModel>();
@@ -39,6 +39,11 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
         SnackBar(content: Text('Greška prilikom dohvatanja podataka: $e')),
       );
     }
+  }
+
+  String formatDate(DateTime? dateTime) {
+    if (dateTime == null) return '';
+    return DateFormat('dd.MM.yyyy. HH:mm').format(dateTime);
   }
 
   @override
@@ -55,7 +60,7 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -68,14 +73,15 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
                 itemBuilder: (context, index) {
                   NotificationModel notification = result!.result[index];
                   return GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
+                    onTap: () async {
+                      await Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => NotificationDetailScreen(
                             notification: notification,
                           ),
                         ),
                       );
+                      _loadData();
                     },
                     child: Container(
                       padding: const EdgeInsets.all(16.0),
@@ -86,11 +92,31 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              Icon(Icons.notifications,
+                                  color: Colors.blue[200]),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  notification.heading ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1D3557),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
                           Text(
-                            notification.heading ?? '',
-                            style: const TextStyle(
+                            'Status: ${notification?.isRead == true ? "Obavijest je pročitana" : "Nova obavijest"}',
+                            style: TextStyle(
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1D3557),
+                              color: notification?.isRead == true
+                                  ? Colors.grey
+                                  : Colors.red,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -104,6 +130,17 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
                                 fontFamily: 'Roboto',
                               ),
                             ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                " ${formatDate(notification.createdAt)}",
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey[600]),
+                              ),
+                            ],
                           ),
                         ],
                       ),

@@ -5,6 +5,7 @@ import 'package:furniturestore_mobile/providers/account_provider.dart';
 import 'package:furniturestore_mobile/providers/category_provider.dart';
 import 'package:furniturestore_mobile/providers/city_provider.dart';
 import 'package:furniturestore_mobile/providers/custom_reservation_provider.dart';
+import 'package:furniturestore_mobile/providers/decoration_item_provider.dart';
 import 'package:furniturestore_mobile/providers/gift_card_provider.dart';
 import 'package:furniturestore_mobile/providers/notification_provider.dart';
 import 'package:furniturestore_mobile/providers/order_item_provider.dart';
@@ -41,6 +42,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => CustomReservationProvider()),
       ChangeNotifierProvider(create: (_) => WishListProvider()),
       ChangeNotifierProvider(create: (_) => CityProvider()),
+      ChangeNotifierProvider(create: (_) => DecorationItemProvider()),
     ],
     child: const MyMaterialApp(),
   ));

@@ -6,11 +6,17 @@ namespace FurnitureStore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SubcategoryController : BaseCRUDController<Models.Subcategory.Subcategory,
+    public class SubcategoryController : BaseImageHandlingController<
+        Models.Subcategory.Subcategory,
         SubcategorySearchObject,
-        Models.Subcategory.SubcategoryRequest, Models.Subcategory.SubcategoryRequest, long>
+        Models.Subcategory.SubcategoryRequest,
+        Models.Subcategory.SubcategoryRequest,
+        long>
     {
-        public SubcategoryController(ILogger<BaseController<Models.Subcategory.Subcategory, SubcategorySearchObject, long>> logger, ISubcategoryService service) : base(logger, service)
+        public SubcategoryController(
+            ILogger<BaseImageHandlingController<Models.Subcategory.Subcategory, SubcategorySearchObject, Models.Subcategory.SubcategoryRequest, Models.Subcategory.SubcategoryRequest, long>> logger,
+            ISubcategoryService service)
+            : base(logger, service, service)
         {
         }
     }

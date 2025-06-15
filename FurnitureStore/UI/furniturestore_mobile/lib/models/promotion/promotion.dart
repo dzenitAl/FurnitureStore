@@ -14,6 +14,8 @@ class PromotionModel {
   List<ProductModel>? products;
   DateTime? startDate;
   DateTime? endDate;
+  String? imagePath;
+  int? imageId;
 
   PromotionModel({
     this.id,
@@ -24,6 +26,8 @@ class PromotionModel {
     this.products,
     this.startDate,
     this.endDate,
+    this.imagePath,
+    this.imageId,
   });
 
   factory PromotionModel.fromJson(Map<String, dynamic> json) =>

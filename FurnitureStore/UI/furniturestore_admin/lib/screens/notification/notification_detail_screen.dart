@@ -150,6 +150,10 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
       var request = Map<String, dynamic>.from(formData!);
       request['adminId'] = currentUser?.nameid;
 
+      if (widget.notification == null) {
+        request['createdAt'] = DateTime.now();
+      }
+
       try {
         if (widget.notification == null) {
           await _notificationProvider.insert(request);

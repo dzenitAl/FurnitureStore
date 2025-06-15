@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:furniturestore_admin/main.dart';
 import 'package:furniturestore_admin/screens/category/category_list_screen.dart';
 import 'package:furniturestore_admin/screens/custom_furniture_reservation/custom_reservation_list_screen.dart';
+import 'package:furniturestore_admin/screens/decoration_item/decoration_item_list_screen.dart';
 import 'package:furniturestore_admin/screens/gift_card/gift_card_list_screen.dart';
 import 'package:furniturestore_admin/screens/notification/notification_list_screen.dart';
 import 'package:furniturestore_admin/screens/order/order_list_screen.dart';
@@ -10,6 +11,7 @@ import 'package:furniturestore_admin/screens/product_reservation/product_reserva
 import 'package:furniturestore_admin/screens/promotion/promotion_list_screen.dart';
 import 'package:furniturestore_admin/screens/report/report_list_screen.dart';
 import 'package:furniturestore_admin/screens/subcategory/subcategory_list_screen.dart';
+import 'package:furniturestore_admin/screens/users/user_list_screen.dart';
 import 'package:furniturestore_admin/utils/utils.dart';
 
 class MasterScreenWidget extends StatefulWidget {
@@ -80,6 +82,19 @@ class _MasterScreenWidgetState extends State<MasterScreenWidget> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (context) => const ProductListScreen()),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.category_rounded,
+                          color: Colors.white),
+                      title: const Text("Dekoracijske stavke",
+                          style: TextStyle(color: Colors.white)),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const DecorationItemListScreen()),
                         );
                       },
                     ),
@@ -190,6 +205,18 @@ class _MasterScreenWidgetState extends State<MasterScreenWidget> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (context) => const ReportListScreen()),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading:
+                          const Icon(Icons.person_outline, color: Colors.white),
+                      title: const Text("Lista korisnika",
+                          style: TextStyle(color: Colors.white)),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => const UserListScreen()),
                         );
                       },
                     ),

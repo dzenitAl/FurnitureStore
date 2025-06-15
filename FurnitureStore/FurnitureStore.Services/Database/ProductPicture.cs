@@ -10,5 +10,7 @@ namespace FurnitureStore.Services.Database
         public Product? Product { get; set; }
         public string EntityType { get; set; }
         public long EntityId { get; set; }
+        public long? DecorativeItemId { get; set; }
+        public DecorativeItem? DecorativeItem { get; set; }
     }
 }

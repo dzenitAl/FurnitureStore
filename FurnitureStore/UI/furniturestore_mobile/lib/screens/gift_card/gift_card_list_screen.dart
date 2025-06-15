@@ -47,6 +47,7 @@ class _GiftCardListScreenState extends State<GiftCardListScreen> {
                   child: GestureDetector(
                     onTap: () {},
                     child: Container(
+                      padding: EdgeInsets.only(right: 10),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
@@ -124,15 +125,84 @@ class _GiftCardListScreenState extends State<GiftCardListScreen> {
                           ),
                           Expanded(
                             flex: 2,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/furniture_logo.jpg',
-                                  width: 80,
-                                  height: 80,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.grey.shade400,
+                                  width: 1,
                                 ),
-                              ],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: giftCard.imagePath != null &&
+                                      giftCard.imagePath!.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        giftCard.imagePath!.startsWith('http')
+                                            ? giftCard.imagePath!
+                                            : 'http://10.0.2.2:7015${giftCard.imagePath}',
+                                        height: 126,
+                                        width: 80,
+                                        fit: BoxFit.cover,
+                                        headers: {
+                                          'Authorization':
+                                              'Bearer ${Authorization.token}'
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Container(
+                                            height: 150,
+                                            width: 80,
+                                            decoration: BoxDecoration(
+                                              color: Color.fromARGB(
+                                                  255, 116, 143, 187),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: const Icon(
+                                              Icons.card_giftcard,
+                                              size: 40,
+                                              color: Colors.white,
+                                            ),
+                                          );
+                                        },
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return SizedBox(
+                                            height: 150,
+                                            width: 80,
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                value: loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : Container(
+                                      height: 150,
+                                      width: 80,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Color.fromARGB(255, 116, 143, 187),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.card_giftcard,
+                                        size: 40,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                             ),
                           ),
                         ],

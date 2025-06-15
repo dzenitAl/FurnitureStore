@@ -4,8 +4,11 @@ import 'package:furniturestore_admin/models/gift_card/gift_card.dart';
 import 'package:furniturestore_admin/models/search_result.dart';
 import 'package:furniturestore_admin/providers/gift_card_provider.dart';
 import 'package:furniturestore_admin/screens/gift_card/gift_card_detail_screen.dart';
+import 'package:furniturestore_admin/utils/utils.dart';
 import 'package:furniturestore_admin/widgets/master_screen.dart';
 import 'package:provider/provider.dart';
+
+const String baseUrl = 'http://localhost:7015'; // or your actual base URL
 
 class GiftCardListScreen extends StatefulWidget {
   const GiftCardListScreen({super.key});
@@ -70,6 +73,56 @@ class _GiftCardListScreenState extends State<GiftCardListScreen> {
       'name': _nameFilterController.text,
       'cardNumber': _cardNumberFilterController.text,
     });
+  }
+
+  Widget _buildGiftCardImage(GiftCardModel giftCard) {
+    if (giftCard.imagePath == null || giftCard.imagePath!.isEmpty) {
+      return Container(
+        width: 60,
+        height: 60,
+        color: Colors.grey[200],
+        child: const Icon(Icons.image_not_supported),
+      );
+    }
+
+    final imageUrl = giftCard.imagePath!.startsWith('http')
+        ? giftCard.imagePath!
+        : '$baseUrl${giftCard.imagePath}';
+
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey[300]!,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        headers: {'Authorization': 'Bearer ${Authorization.token}'},
+        errorBuilder: (context, error, stackTrace) {
+          print("Error loading image: $error");
+          return Container(
+            color: Colors.grey[200],
+            child: const Icon(Icons.image_not_supported),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -178,6 +231,15 @@ class _GiftCardListScreenState extends State<GiftCardListScreen> {
                         columns: const [
                           DataColumn(
                             label: Text(
+                              'Slika',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1D3557),
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
                               'Naziv',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -249,6 +311,7 @@ class _GiftCardListScreenState extends State<GiftCardListScreen> {
                                   }
                                 },
                                 cells: [
+                                  DataCell(_buildGiftCardImage(giftCard)),
                                   DataCell(
                                     Text(
                                       giftCard.name ?? '',

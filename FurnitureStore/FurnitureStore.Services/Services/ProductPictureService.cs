@@ -133,7 +133,15 @@ namespace FurnitureStore.Services.Services
             return _mapper.Map<Models.ProductPicture.ProductPicture>(picture);
         }
 
-        public async Task<Models.ProductPicture.ProductPicture> AddEntityImageAsync(string entityType, long entityId, IFormFile file)
+        public async Task<List<Models.ProductPicture.ProductPicture>> GetAllByEntityAsync(string entityType, long entityId)
+        {
+            var pictures = await _context.ProductPictures
+                .Where(p => p.EntityType == entityType && p.EntityId == entityId)
+                .ToListAsync();
+            return _mapper.Map<List<Models.ProductPicture.ProductPicture>>(pictures);
+        }
+
+        public async Task<Models.ProductPicture.ProductPicture> AddEntityImageAsync(string entityType, long entityId, IFormFile file, bool replaceExisting = true)
         {
             if (file == null || file.Length == 0)
             {
@@ -146,10 +154,13 @@ namespace FurnitureStore.Services.Services
                 throw new ArgumentException("Invalid file type. Only .jpg, .jpeg, .png, and .gif files are allowed.");
             }
 
-            var existing = await GetByEntityAsync(entityType, entityId);
-            if (existing != null)
+            if (replaceExisting)
             {
-                await DeleteImage(existing.Id);
+                var existing = await GetByEntityAsync(entityType, entityId);
+                if (existing != null)
+                {
+                    await DeleteImage(existing.Id);
+                }
             }
 
             string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -170,6 +181,15 @@ namespace FurnitureStore.Services.Services
                     EntityId = entityId,
                     ImagePath = $"/images/{uniqueFileName}"
                 };
+
+                if (entityType == "Product")
+                {
+                    productPicture.ProductId = entityId;
+                }
+                else if (entityType == "DecorativeItem")
+                {
+                    productPicture.DecorativeItemId = entityId;
+                }
 
                 _context.ProductPictures.Add(productPicture);
                 await _context.SaveChangesAsync();

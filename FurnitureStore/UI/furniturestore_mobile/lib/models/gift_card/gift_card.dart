@@ -10,6 +10,8 @@ class GiftCardModel {
   int? amount;
   DateTime? expiryDate;
   bool? isActivated;
+  String? imagePath;
+  int? imageId;
 
   GiftCardModel({
     this.id,
@@ -18,6 +20,8 @@ class GiftCardModel {
     this.amount,
     this.expiryDate,
     this.isActivated,
+    this.imagePath,
+    this.imageId,
   });
 
   factory GiftCardModel.fromJson(Map<String, dynamic> json) =>

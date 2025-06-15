@@ -97,6 +97,68 @@ namespace FurnitureStore.Controllers
             }
         }
 
+        [HttpGet("GetByEntityTypeAndId/{entityType}/{entityId}")]
+        public async Task<IActionResult> GetByEntityTypeAndId(string entityType, long entityId)
+        {
+            if (string.IsNullOrEmpty(entityType) || entityId <= 0)
+            {
+                return BadRequest("Invalid entity type or ID.");
+            }
+
+            try
+            {
+                var pictures = await _productPictureService.GetAllByEntityAsync(entityType, entityId);
+                return Ok(pictures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to get pictures: {ex.Message}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("uploadEntityImages")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UploadEntityImages(
+            [FromForm] string entityType,
+            [FromForm] long entityId,
+            [FromForm] bool replaceExisting,
+            [FromForm] List<IFormFile> images)
+        {
+            try
+            {
+                if (images == null || !images.Any())
+                {
+                    return BadRequest("No images provided");
+                }
+
+                var results = new List<object>();
+                foreach (var image in images)
+                {
+                    if (image.Length > 0)
+                    {
+                        var result = await _productPictureService.AddEntityImageAsync(
+                            entityType, 
+                            entityId, 
+                            image,
+                            replaceExisting);
+                        results.Add(new { 
+                            id = result.Id, 
+                            path = result.ImagePath,
+                            fullPath = $"{Request.Scheme}://{Request.Host}{result.ImagePath}"
+                        });
+                    }
+                }
+
+                return Ok(new { message = "Images uploaded successfully", results });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error uploading images: {ex.Message}");
+                return StatusCode(500, $"Error uploading images: {ex.Message}");
+            }
+        }
+
         [HttpGet("folder-check")]
         public IActionResult CheckProductImagesFolder()
         {

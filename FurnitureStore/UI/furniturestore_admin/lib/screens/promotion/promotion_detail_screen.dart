@@ -7,10 +7,15 @@ import 'package:furniturestore_admin/models/search_result.dart';
 import 'package:furniturestore_admin/providers/account_provider.dart';
 import 'package:furniturestore_admin/providers/promotion_provider.dart';
 import 'package:furniturestore_admin/providers/product_provider.dart';
-import 'package:furniturestore_admin/widgets/custom_dropdown_field.dart';
+import 'package:furniturestore_admin/utils/utils.dart';
 import 'package:furniturestore_admin/widgets/custom_text_field.dart';
 import 'package:provider/provider.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:furniturestore_admin/utils/image_handling_mixin.dart';
+
+const String baseUrl = 'http://localhost:7015';
 
 class PromotionDetailScreen extends StatefulWidget {
   final PromotionModel? promotion;
@@ -21,7 +26,8 @@ class PromotionDetailScreen extends StatefulWidget {
   _PromotionDetailScreenState createState() => _PromotionDetailScreenState();
 }
 
-class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
+class _PromotionDetailScreenState extends State<PromotionDetailScreen>
+    with ImageHandlingMixin {
   final _formKey = GlobalKey<FormBuilderState>();
   late PromotionProvider _promotionProvider;
   late AccountProvider _accountProvider;
@@ -32,6 +38,9 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
   bool isLoading = true;
   List<int?> _selectedProducts = [];
   dynamic currentUser;
+  File? _selectedImage;
+  bool _isUploadingImage = false;
+  PromotionModel? _promotion;
 
   @override
   void didChangeDependencies() {
@@ -58,6 +67,7 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
           'adminId': widget.promotion?.adminId ?? '',
           'products': _selectedProducts,
         };
+        _promotion = widget.promotion;
       } else {
         _initialValue = {
           'heading': '',
@@ -65,6 +75,7 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
           'adminId': '',
           'products': [],
         };
+        _promotion = null;
       }
 
       setState(() {
@@ -98,14 +109,89 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
                   children: [
                     Expanded(
                       flex: isSmallScreen ? 3 : 6,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ClipRRect(
+                      child: Container(
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            "assets/images/subcategory_detail_photo.jpg",
-                            fit: BoxFit.cover,
-                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.2),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Text(
+                              'Slika promocije',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1D3557),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: _selectedImage != null
+                                    ? Image.file(
+                                        _selectedImage!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return _buildErrorPlaceholder(
+                                              'Error loading selected image');
+                                        },
+                                      )
+                                    : _promotion?.imagePath != null
+                                        ? Image.network(
+                                            _promotion!.imagePath!
+                                                    .startsWith('http')
+                                                ? _promotion!.imagePath!
+                                                : '$baseUrl${_promotion!.imagePath}',
+                                            fit: BoxFit.cover,
+                                            headers: {
+                                              'Authorization':
+                                                  'Bearer ${Authorization.token}'
+                                            },
+                                            loadingBuilder: (context, child,
+                                                loadingProgress) {
+                                              if (loadingProgress == null)
+                                                return child;
+                                              return Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  value: loadingProgress
+                                                              .expectedTotalBytes !=
+                                                          null
+                                                      ? loadingProgress
+                                                              .cumulativeBytesLoaded /
+                                                          loadingProgress
+                                                              .expectedTotalBytes!
+                                                      : null,
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return _buildErrorPlaceholder(
+                                                  'Error loading image');
+                                            },
+                                          )
+                                        : _buildErrorPlaceholder('Nema slike'),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: _isUploadingImage ? null : _pickImage,
+                              icon: const Icon(Icons.image),
+                              label: const Text("Odaberi sliku"),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -165,7 +251,8 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
                                       const EdgeInsets.symmetric(horizontal: 8),
                                   child: DropdownSearch<
                                       ProductModel>.multiSelection(
-                                    items: productResult?.result ?? [],
+                                    items: (filter, scrollController) =>
+                                        productResult?.result ?? [],
                                     selectedItems: _selectedProducts.map((id) {
                                       return productResult!.result.firstWhere(
                                           (product) => product.id == id);
@@ -185,9 +272,7 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
                                         scrollDirection: Axis.horizontal,
                                         child: ConstrainedBox(
                                           constraints: const BoxConstraints(
-                                            minWidth: 500,
-                                            maxWidth: 600,
-                                          ),
+                                              minWidth: 500, maxWidth: 600),
                                           child: Wrap(
                                             children:
                                                 selectedItems.map((product) {
@@ -205,6 +290,9 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
                                         ),
                                       );
                                     },
+                                    compareFn:
+                                        (ProductModel? a, ProductModel? b) =>
+                                            a?.id == b?.id,
                                   ),
                                 ),
                                 const SizedBox(height: 20),
@@ -240,79 +328,108 @@ class _PromotionDetailScreenState extends State<PromotionDetailScreen> {
     );
   }
 
-  Widget _customDropdownBuilder(
-      BuildContext context, List<ProductModel?> selectedItems) {
-    return Wrap(
-      children: selectedItems.map((product) {
-        return Chip(
-          label: Text(product?.name ?? ''),
-          onDeleted: () {
-            setState(() {
-              _selectedProducts.remove(product?.id);
-            });
-          },
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _customPopupSelectionWidget(
-      BuildContext context, ProductModel item, bool isSelected) {
-    return CheckboxListTile(
-      value: isSelected,
-      title: Text(item.name ?? ''),
-      controlAffinity: ListTileControlAffinity.leading,
-      onChanged: (bool? selected) {
-        setState(() {
-          if (selected!) {
-            _selectedProducts.add(item.id);
-          } else {
-            _selectedProducts.remove(item.id);
-          }
-        });
-      },
-    );
-  }
-
   void _savePromotion() async {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
-      var formValue = _formKey.currentState?.value;
-
-      List<int?> selectedProductIds = _selectedProducts;
-
-      print(selectedProductIds);
-      var request = {
-        'heading': formValue!['heading'],
-        'content': formValue['content'],
-        'adminId': currentUser?.nameid,
-        'productIds': selectedProductIds,
-      };
+      setState(() {
+        _isUploadingImage = true;
+      });
 
       try {
+        var formValue = _formKey.currentState?.value;
+        List<int?> selectedProductIds = _selectedProducts;
+
+        var request = {
+          'heading': formValue!['heading'],
+          'content': formValue['content'],
+          'adminId': currentUser?.nameid,
+          'productIds': selectedProductIds,
+        };
+
+        PromotionModel savedPromotion;
         if (widget.promotion == null) {
-          await _promotionProvider.insert(request);
+          savedPromotion = await _promotionProvider.insert(request);
         } else {
-          await _promotionProvider.update(widget.promotion!.id!, request);
+          savedPromotion =
+              await _promotionProvider.update(widget.promotion!.id!, request);
+        }
+
+        if (_selectedImage != null) {
+          await uploadImage('Promotion', savedPromotion.id!, _selectedImage!,
+              Authorization.token!);
+
+          final updatedPromotion =
+              await _promotionProvider.getById(savedPromotion.id!);
+          setState(() {
+            _promotion = updatedPromotion;
+            _selectedImage = null;
+          });
         }
 
         Navigator.pop(context, true);
-      } on Exception catch (e) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text("Greška"),
-            content: Text(e.toString()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
+      } catch (e) {
+        print("Error saving promotion: $e");
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: const Text("Error"),
+              content: Text("Error saving promotion: $e"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+        }
+      } finally {
+        setState(() {
+          _isUploadingImage = false;
+        });
       }
     } else {
-      print('Validacija nije uspela');
+      print('Validation failed');
+    }
+  }
+
+  Widget _buildErrorPlaceholder(String message) {
+    return Container(
+      color: Colors.grey[200],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.image_not_supported_outlined,
+            color: Colors.grey[600],
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  void _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      print("Image picked: ${pickedFile.path}");
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    } else {
+      print("No image selected");
     }
   }
 }

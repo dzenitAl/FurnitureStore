@@ -12,6 +12,22 @@ namespace FurnitureStore.Controllers
         {
 
         }
+        [HttpPut("{id}/mark-read")]
+        public async Task<IActionResult> MarkAsRead(long id)
+        {
+            try
+            {
+                var result = await ((INotificationService)_service).MarkAsRead(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message == "Notification not found")
+                    return NotFound();
+                throw;
+            }
+        }
+
     }
 }
     

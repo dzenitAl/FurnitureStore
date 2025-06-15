@@ -12,6 +12,6 @@ namespace FurnitureStore.Services.Database
         public DateTime ExpiryDate { get; set; }
         public bool IsActivated { get; set; }
         public virtual ICollection<GiftCardUsers> GiftCardUsers { get; set; } = new List<GiftCardUsers>();
-
+        public string ImagePath { get; set; }
     }
 }

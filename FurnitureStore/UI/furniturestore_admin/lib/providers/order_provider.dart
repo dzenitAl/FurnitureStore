@@ -19,7 +19,8 @@ class OrderProvider extends BaseProvider<OrderModel> {
 
   Future<OrderModel?> getOrderDetails(int orderId) async {
     try {
-      var url = "${BaseProvider.baseUrl}Order/$orderId";
+      // Use the dedicated endpoint that returns order with items
+      var url = "${BaseProvider.baseUrl}Order/$orderId/details";
       print("Calling API at URL: $url");
 
       var uri = Uri.parse(url);
@@ -39,10 +40,9 @@ class OrderProvider extends BaseProvider<OrderModel> {
           var jsonData = json.decode(response.body);
           print("Parsed JSON: $jsonData");
 
-          var orderItems = await _orderItemProvider.getByOrderId(orderId);
-
           var order = OrderModel.fromJson(jsonData);
-          order.orderItems = orderItems;
+          print(
+              "Successfully parsed order with ${order.orderItems?.length ?? 0} items");
 
           return order;
         } catch (e) {

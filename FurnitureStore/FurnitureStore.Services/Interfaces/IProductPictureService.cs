@@ -13,7 +13,8 @@ namespace FurnitureStore.Services.Interfaces
         Task<List<ProductPicture>> GetProductPicturesAsync(long productId);
         Task<ProductPicture> GetProductPictureById(long id);
         Task<ProductPicture> GetByEntityAsync(string entityType, long entityId);
-        Task<ProductPicture> AddEntityImageAsync(string entityType, long entityId, IFormFile file);
+        Task<List<ProductPicture>> GetAllByEntityAsync(string entityType, long entityId);
+        Task<ProductPicture> AddEntityImageAsync(string entityType, long entityId, IFormFile file, bool replaceExisting = true);
         Task<bool> DeleteEntityImageAsync(string entityType, long entityId);
         
         Task<string> GetEntityImagePathAsync(string entityType, long entityId);

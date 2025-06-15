@@ -14,6 +14,7 @@ namespace FurnitureStore.Services.Configuration
             builder.HasOne(w => w.Customer)
                    .WithOne(u => u.WishList)
                    .HasForeignKey<WishList>(w => w.CustomerId)
+
                    .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(w => w.Products)

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furniturestore_mobile/screens/product/product_list_screen.dart';
+import 'package:furniturestore_mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:furniturestore_mobile/models/subcategory/subcategory.dart';
 import 'package:furniturestore_mobile/models/category/category.dart';
@@ -114,19 +115,83 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // const Icon(Icons.category_outlined,
-            //    size: 50, color: Color(0xFF1D3557)),
-            Image.asset(
-              'assets/images/bedroom.png',
-              width: 160,
-              height: 120,
-              fit: BoxFit.cover,
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.grey.shade400,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: subcategory.imagePath != null &&
+                      subcategory.imagePath!.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        subcategory.imagePath!.startsWith('http')
+                            ? subcategory.imagePath!
+                            : 'http://10.0.2.2:7015${subcategory.imagePath}',
+                        height: 120,
+                        width: 160,
+                        fit: BoxFit.cover,
+                        headers: {
+                          'Authorization': 'Bearer ${Authorization.token}'
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 120,
+                            width: 160,
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(255, 116, 143, 187),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.category,
+                              size: 40,
+                              color: Colors.white,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return SizedBox(
+                            height: 120,
+                            width: 160,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Container(
+                      height: 120,
+                      width: 160,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 116, 143, 187),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.category,
+                        size: 40,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
-
             const SizedBox(height: 10),
             Text(
               subcategory.name ?? 'N/A',
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1D3557),
+              ),
               textAlign: TextAlign.center,
             ),
           ],

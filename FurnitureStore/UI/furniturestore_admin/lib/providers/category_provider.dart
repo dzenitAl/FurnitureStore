@@ -6,7 +6,6 @@ class CategoryProvider extends BaseProvider<CategoryModel> {
 
   @override
   CategoryModel fromJson(data) {
-    // TODO: implement fromJson
     return CategoryModel.fromJson(data);
   }
 }

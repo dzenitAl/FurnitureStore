@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:furniturestore_mobile/models/product/product.dart';
 import 'package:furniturestore_mobile/models/gift_card/gift_card.dart';
+import 'package:furniturestore_mobile/models/decoration_item/decoration_item.dart';
 import 'package:furniturestore_mobile/providers/account_provider.dart';
 import 'package:furniturestore_mobile/providers/base_provider.dart';
 import 'package:furniturestore_mobile/providers/order_provider.dart';
@@ -9,6 +10,8 @@ import 'package:furniturestore_mobile/screens/product/product_detail_screen.dart
 import 'package:furniturestore_mobile/utils/utils.dart';
 import 'package:furniturestore_mobile/widgets/master_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:furniturestore_mobile/widgets/cart_item_card.dart';
+import 'package:furniturestore_mobile/constants/app_constants.dart';
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
@@ -20,23 +23,47 @@ class OrderScreen extends StatefulWidget {
 class _OrderScreenState extends State<OrderScreen> {
   Map<dynamic, int> cartItems = {};
   double totalPrice = 0.0;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadCartItems();
+    _initializeCartItems();
   }
 
-  void _loadCartItems() {
-    final items = Order.getOrderItems();
+  Future<void> _initializeCartItems() async {
+    await _loadCartItems();
+  }
 
-    cartItems.clear();
-    for (var item in items) {
-      cartItems.update(item, (quantity) => quantity + 1, ifAbsent: () => 1);
+  Future<void> _loadCartItems() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    cartItems = Order.getCartItemsWithQuantities();
+
+    final decorationItems = await Order.getDecorationItemsWithPictures();
+
+    Map<dynamic, int> updatedCartItems = {};
+
+    for (var entry in cartItems.entries) {
+      if (entry.key is DecorationItemModel) {
+        var itemWithPictures = decorationItems.firstWhere(
+          (item) => item.id == entry.key.id,
+          orElse: () => entry.key,
+        );
+        updatedCartItems[itemWithPictures] = entry.value;
+      } else {
+        updatedCartItems[entry.key] = entry.value;
+      }
     }
 
+    cartItems = updatedCartItems;
     _calculateTotalPrice();
-    setState(() {});
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _calculateTotalPrice() {
@@ -51,6 +78,8 @@ class _OrderScreenState extends State<OrderScreen> {
           itemPrice = item.price ?? 0.0;
         } else if (item is GiftCardModel) {
           itemPrice = (item.amount ?? 0.0).toDouble();
+        } else if (item is DecorationItemModel) {
+          itemPrice = item.price ?? 0.0;
         } else {
           itemPrice = 0.0;
         }
@@ -72,6 +101,8 @@ class _OrderScreenState extends State<OrderScreen> {
         Order.removeProductFromOrder(item);
       } else if (item is GiftCardModel) {
         Order.removeGiftCardFromOrder(item);
+      } else if (item is DecorationItemModel) {
+        Order.removeDecorationItemFromOrder(item);
       }
 
       _calculateTotalPrice();
@@ -107,15 +138,17 @@ class _OrderScreenState extends State<OrderScreen> {
       showBackButton: true,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: cartItems.isEmpty
-            ? _buildEmptyCart()
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: _buildCartList()),
-                  _buildCartSummary(),
-                ],
-              ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : cartItems.isEmpty
+                ? _buildEmptyCart()
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: _buildCartList()),
+                      _buildCartSummary(),
+                    ],
+                  ),
       ),
     );
   }
@@ -143,7 +176,7 @@ class _OrderScreenState extends State<OrderScreen> {
         final item = cartItems.keys.elementAt(index);
         final quantity = cartItems[item]!;
 
-        return Expanded(child: _buildCartItemDetails(item, quantity));
+        return _buildCartItemDetails(item, quantity);
       },
     );
   }
@@ -153,203 +186,90 @@ class _OrderScreenState extends State<OrderScreen> {
       return _buildProductDetails(item, quantity);
     } else if (item is GiftCardModel) {
       return _buildGiftCardDetails(item, quantity);
+    } else if (item is DecorationItemModel) {
+      return _buildDecorationItemDetails(item, quantity);
     } else {
       return const SizedBox.shrink();
     }
   }
 
   Widget _buildProductDetails(ProductModel product, int quantity) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: const Color(0xFFE0E0E0),
-                    image: DecorationImage(
-                      image: (product.productPictures != null &&
-                              product.productPictures!.isNotEmpty)
-                          ? NetworkImage(
-                              'http://10.0.2.2:7015/api/ProductPicture/direct-image/${product.productPictures!.first.id}')
-                          : const AssetImage('assets/images/furniture_logo.jpg')
-                              as ImageProvider,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.name ?? '',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1D3557),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Jedinična cijena: ${product.price?.toStringAsFixed(2) ?? "0.00"} BAM',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF1D3557),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                if (quantity > 1) {
-                                  cartItems[product] = quantity - 1;
-                                } else {
-                                  cartItems.remove(product);
-                                }
-                                _calculateTotalPrice();
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Icon(Icons.remove, size: 20),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '$quantity',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                cartItems[product] = quantity + 1;
-                                _calculateTotalPrice();
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Icon(Icons.add, size: 20),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Ukupno: ${(product.price ?? 0.0) * quantity} BAM',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF70BC69),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: InkWell(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Potvrda brisanja'),
-                    content: const Text(
-                        'Da li ste sigurni da želite ukloniti ovaj proizvod iz korpe?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text(
-                          'Odustani',
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            cartItems.remove(product);
-                            _calculateTotalPrice();
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                        ),
-                        child: const Text('Ukloni'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.8),
-                  shape: BoxShape.circle,
-                ),
-                padding: const EdgeInsets.all(6),
-                child: const Icon(
-                  Icons.close,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return CartItemCard(
+      name: product.name ?? '',
+      unitPrice: product.price ?? 0.0,
+      quantity: quantity,
+      imageId: product.productPictures?.isNotEmpty == true
+          ? product.productPictures?.first.id
+          : null,
+      itemType: 'product',
+      onDecrement: () {
+        Order.removeProductFromOrder(product);
+        _loadCartItems();
+      },
+      onIncrement: () {
+        Order.addProductToOrder(product);
+        _loadCartItems();
+      },
+      onRemove: () {
+        final currentQuantity = Order.getItemQuantity(product);
+        for (int i = 0; i < currentQuantity; i++) {
+          Order.removeProductFromOrder(product);
+        }
+        _loadCartItems();
+      },
     );
   }
 
   Widget _buildGiftCardDetails(GiftCardModel giftCard, int quantity) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          giftCard.name ?? "",
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1D3557),
-          ),
-        ),
-        Text(
-          'Iznos: ${(giftCard.amount ?? 0.0) * quantity} KM ${quantity}x ${giftCard.amount} KM',
-          style: const TextStyle(
-            fontSize: 16,
-            color: Color(0xFF1D3557),
-          ),
-        ),
-      ],
+    return CartItemCard(
+      name: giftCard.name ?? '',
+      unitPrice: giftCard.amount?.toDouble() ?? 0.0,
+      quantity: quantity,
+      imageId: giftCard.imageId,
+      imagePath: giftCard.imagePath,
+      itemType: 'giftCard',
+      onDecrement: () {
+        Order.removeGiftCardFromOrder(giftCard);
+        _loadCartItems();
+      },
+      onIncrement: () {
+        Order.addGiftCardToOrder(giftCard);
+        _loadCartItems();
+      },
+      onRemove: () {
+        final currentQuantity = Order.getItemQuantity(giftCard);
+        for (int i = 0; i < currentQuantity; i++) {
+          Order.removeGiftCardFromOrder(giftCard);
+        }
+        _loadCartItems();
+      },
+    );
+  }
+
+  Widget _buildDecorationItemDetails(DecorationItemModel item, int quantity) {
+    return CartItemCard(
+      name: item.name ?? '',
+      unitPrice: item.price ?? 0.0,
+      quantity: quantity,
+      imageId: item.productPictures?.isNotEmpty == true
+          ? item.productPictures?.first.id
+          : null,
+      itemType: 'decoration',
+      onDecrement: () {
+        Order.removeDecorationItemFromOrder(item);
+        _loadCartItems();
+      },
+      onIncrement: () {
+        Order.addDecorationItemToOrder(item);
+        _loadCartItems();
+      },
+      onRemove: () {
+        final currentQuantity = Order.getItemQuantity(item);
+        for (int i = 0; i < currentQuantity; i++) {
+          Order.removeDecorationItemFromOrder(item);
+        }
+        _loadCartItems();
+      },
     );
   }
 
@@ -362,7 +282,6 @@ class _OrderScreenState extends State<OrderScreen> {
 
     final orderRequest = {
       "orderDate": DateTime.now().toIso8601String(),
-      // "delivery": Delivery.HomeDelivery,
       "totalPrice": totalPrice,
       "customerId": currentUser.nameid
     };

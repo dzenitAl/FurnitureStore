@@ -154,7 +154,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   void _saveReport() {
     if (_formKey.currentState!.validate()) {
-      // Save the report data here
       Navigator.of(context).pop();
     }
   }
@@ -166,13 +165,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         title: Text(widget.report == null
             ? 'Dodaj novi izvestaj'
             : 'Informacije o izvestaju'),
-        actions: [
-          if (widget.report == null) // Prikaz dugmeta samo kada je dodavanje
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: _saveReport,
-            ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -266,24 +258,21 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 });
               }),
               const SizedBox(height: 20),
-              if (widget.report ==
-                  null) // Prikaz dugmeta samo kada je dodavanje
-                Center(
-                  child: ElevatedButton(
-                    onPressed: _saveReport,
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: const Color(0xFFF4A258),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16.0, horizontal: 32.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _saveReport,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFFF4A258),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 32.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child:
-                        const Text('Sačuvaj', style: TextStyle(fontSize: 16)),
                   ),
+                  child: const Text('Sačuvaj', style: TextStyle(fontSize: 16)),
                 ),
+              ),
             ],
           ),
         ),

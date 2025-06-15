@@ -7,8 +7,9 @@ class SubcategoryModel {
   int? id;
   String? name;
   int? categoryId;
+  String? imagePath;
 
-  SubcategoryModel(this.id, this.name, this.categoryId);
+  SubcategoryModel(this.id, this.name, this.categoryId, this.imagePath);
 
   factory SubcategoryModel.fromJson(Map<String, dynamic> json) =>
       _$SubcategoryModelFromJson(json);

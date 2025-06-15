@@ -10,5 +10,6 @@ namespace FurnitureStore.Models.GiftCard
         public DateTime ExpiryDate { get; set; }
         public bool IsActivated { get; set; }
         public long? ImageId { get; set; }
+        public string? ImagePath { get; set; }
     }
 }

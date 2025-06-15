@@ -11,6 +11,7 @@ PromotionModel _$PromotionModelFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num?)?.toInt(),
       heading: json['heading'] as String?,
       content: json['content'] as String?,
+      imagePath: json['imagePath'] as String?,
       adminId: json['adminId'] as String?,
       admin: json['admin'] == null
           ? null
@@ -25,6 +26,7 @@ Map<String, dynamic> _$PromotionModelToJson(PromotionModel instance) =>
       'id': instance.id,
       'heading': instance.heading,
       'content': instance.content,
+      'imagePath': instance.imagePath,
       'adminId': instance.adminId,
       'admin': instance.admin,
       'products': instance.products,

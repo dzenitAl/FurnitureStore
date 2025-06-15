@@ -3,10 +3,12 @@ import 'package:furniturestore_mobile/models/promotion/promotion.dart';
 import 'package:furniturestore_mobile/providers/promotion_provider.dart';
 import 'package:furniturestore_mobile/screens/product/product_list_screen.dart';
 import 'package:furniturestore_mobile/screens/subcategory/subcategory_list_screen.dart';
+import 'package:furniturestore_mobile/utils/common_methods.dart';
 import 'package:provider/provider.dart';
 import 'package:furniturestore_mobile/providers/category_provider.dart';
 import 'package:furniturestore_mobile/models/category/category.dart';
 import 'package:furniturestore_mobile/widgets/master_screen.dart';
+import 'package:furniturestore_mobile/utils/utils.dart';
 
 class HomePageScreen extends StatefulWidget {
   const HomePageScreen({super.key});
@@ -33,6 +35,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
   Future<void> _loadData() async {
     try {
       var categoriesData = await _categoryProvider.get('');
+
       var promotionsData = await _promotionProvider.get('');
       setState(() {
         categories = categoriesData.result;
@@ -123,27 +126,88 @@ class _HomePageScreenState extends State<HomePageScreen> {
         },
         child: Container(
           width: 120,
+          margin: EdgeInsets.all(2),
+          padding: EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7F7F7),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 1,
-                offset: const Offset(0, 3),
+                color: Colors.grey.shade400,
+                spreadRadius: 0.6,
+                blurRadius: 0.3,
               ),
             ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.category, size: 40, color: Color(0xFF1D3557)),
-              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade400,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: category.imagePath != null &&
+                        category.imagePath!.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          category.imagePath!.startsWith('http')
+                              ? category.imagePath!
+                              : 'http://10.0.2.2:7015${category.imagePath}',
+                          height: 80,
+                          width: 106,
+                          fit: BoxFit.cover,
+                          headers: {
+                            'Authorization': 'Bearer ${Authorization.token}'
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const SizedBox(
+                              height: 80,
+                              width: 110,
+                              child: Icon(Icons.category,
+                                  size: 40, color: Color(0xFF1D3557)),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return SizedBox(
+                              height: 80,
+                              width: 110,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : const SizedBox(
+                        height: 80,
+                        width: 110,
+                        child: Icon(Icons.category,
+                            size: 40, color: Color(0xFF1D3557)),
+                      ),
+              ),
+              const SizedBox(height: 6),
               Text(
                 category.name ?? '',
-                style: const TextStyle(fontSize: 16),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1D3557),
+                ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -153,6 +217,13 @@ class _HomePageScreenState extends State<HomePageScreen> {
   }
 
   Widget _buildPromotionCard(PromotionModel promotion, BuildContext context) {
+    final imageUrl =
+        promotion.imagePath != null && promotion.imagePath!.isNotEmpty
+            ? (promotion.imagePath!.startsWith('http')
+                ? promotion.imagePath!
+                : 'http://10.0.2.2:7015${promotion.imagePath}')
+            : null;
+
     return Padding(
       padding: const EdgeInsets.only(right: 10.0),
       child: InkWell(
@@ -166,29 +237,93 @@ class _HomePageScreenState extends State<HomePageScreen> {
           );
         },
         child: Container(
-          width: 120,
+          width: 184,
+          margin: EdgeInsets.all(2),
+          padding: EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: const Color(0xFFE4F0D0),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 2,
-                blurRadius: 5,
-                offset: const Offset(0, 3),
+                color: Colors.grey.shade400,
+                spreadRadius: 0.6,
+                blurRadius: 0.3,
               ),
             ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.local_offer, size: 40, color: Color(0xFF70BC69)),
-              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade400,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: imageUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          imageUrl,
+                          height: 80,
+                          width: 170,
+                          fit: BoxFit.cover,
+                          headers: {
+                            'Authorization': 'Bearer ${Authorization.token}'
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const SizedBox(
+                              height: 80,
+                              width: 170,
+                              child: Icon(Icons.local_offer,
+                                  size: 40,
+                                  color: Color.fromARGB(255, 110, 180, 218)),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return SizedBox(
+                              height: 80,
+                              width: 170,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Container(
+                        height: 80,
+                        width: 170,
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 116, 143, 187),
+                          border: Border.all(
+                            color: Colors.grey.shade400,
+                            width: 0.6,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.local_offer,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 6),
               Text(
                 promotion.heading ?? 'Promocija',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1D3557),
                 ),

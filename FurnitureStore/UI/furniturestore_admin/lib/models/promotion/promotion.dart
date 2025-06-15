@@ -9,6 +9,7 @@ class PromotionModel {
   int? id;
   String? heading;
   String? content;
+  String? imagePath;
   String? adminId;
   AccountModel? admin;
   List<ProductModel>? products;
@@ -17,6 +18,7 @@ class PromotionModel {
     this.id,
     this.heading,
     this.content,
+    this.imagePath,
     this.adminId,
     this.admin,
     this.products,

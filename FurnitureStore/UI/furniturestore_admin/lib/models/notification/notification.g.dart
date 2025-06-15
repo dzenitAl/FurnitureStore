@@ -12,6 +12,7 @@ NotificationModel _$NotificationModelFromJson(Map<String, dynamic> json) =>
       heading: json['heading'] as String?,
       content: json['content'] as String?,
       adminId: json['adminId'] as String?,
+      createdAt: NotificationModel._dateFromJson(json['createdAt']),
     );
 
 Map<String, dynamic> _$NotificationModelToJson(NotificationModel instance) =>
@@ -20,4 +21,5 @@ Map<String, dynamic> _$NotificationModelToJson(NotificationModel instance) =>
       'heading': instance.heading,
       'content': instance.content,
       'adminId': instance.adminId,
+      'createdAt': NotificationModel._dateToJson(instance.createdAt),
     };

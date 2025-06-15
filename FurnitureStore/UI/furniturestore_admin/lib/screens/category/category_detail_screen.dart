@@ -201,6 +201,10 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen>
                           ? Image.file(
                               _selectedImage!,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return _buildErrorPlaceholder(
+                                    'Error loading selected image');
+                              },
                             )
                           : _category?.imagePath != null
                               ? Image.network(
@@ -212,11 +216,28 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen>
                                     'Authorization':
                                         'Bearer ${Authorization.token}'
                                   },
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress
+                                                    .expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                loadingProgress
+                                                    .expectedTotalBytes!
+                                            : null,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return _buildErrorPlaceholder(
+                                        'Unable to load image from server');
+                                  },
                                 )
-                              : Image.asset(
-                                  "assets/images/category_detail_photo.jpg",
-                                  fit: BoxFit.cover,
-                                ),
+                              : _buildErrorPlaceholder('No image selected'),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -239,6 +260,32 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen>
     );
   }
 
+  Widget _buildErrorPlaceholder(String message) {
+    return Container(
+      color: Colors.grey[200],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.image_not_supported_outlined,
+            color: Colors.grey[600],
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
   void _onSubmit() async {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       setState(() {
@@ -252,32 +299,32 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen>
         CategoryModel savedCategory;
         if (_category == null) {
           savedCategory = await _categoryProvider.insert(request);
+          _category = savedCategory;
         } else {
           savedCategory =
               await _categoryProvider.update(_category!.id!, request);
+          _category = savedCategory;
         }
 
         if (_selectedImage != null) {
           await uploadImage('Category', savedCategory.id!, _selectedImage!,
               Authorization.token!);
-          await _refreshCategoryData();
+
+          final updatedCategory =
+              await _categoryProvider.getById(savedCategory.id!);
           setState(() {
+            _category = updatedCategory;
             _selectedImage = null;
-          });
-        }
-
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        if (_category?.id != null) {
-          final finalRefresh = await _categoryProvider.getById(_category!.id!);
-          setState(() {
-            _category = finalRefresh;
           });
         }
 
         if (_category?.imagePath != null) {
           Navigator.pop(context, true);
         } else {
+          print("Warning: Category saved but image path is null");
+          print("Category ID: ${_category?.id}");
+          print("Last known image path: ${_category?.imagePath}");
+
           showDialog(
             context: context,
             builder: (BuildContext context) => AlertDialog(
@@ -293,8 +340,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen>
             ),
           );
         }
-      } on Exception catch (e) {
-        print("Error during upload: $e");
+      } catch (e) {
+        print("Error during save: $e");
         showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(

@@ -10,5 +10,7 @@ namespace FurnitureStore.Services.Database
         public string Content { get; set; }
         public string AdminId { get; set; }
         public User Admin { get; set; }
+        public bool IsRead { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

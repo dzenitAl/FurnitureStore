@@ -37,8 +37,6 @@ class ProductDetailScreen extends StatelessWidget {
   }
 
   Widget _buildImageCarousel() {
-    print('Pictures count: ${product.productPictures?.length}');
-
     if (product.productPictures == null || product.productPictures!.isEmpty) {
       return Container(
         height: 250,
@@ -64,46 +62,37 @@ class ProductDetailScreen extends StatelessWidget {
           enableInfiniteScroll: false,
           autoPlay: true,
         ),
-        items:
-            product.productPictures!.map((picture) {
-              print('Processing image:');
-              print('  ID: ${picture.id}');
-              print('  ImagePath: ${picture.imagePath}');
+        items: product.productPictures!.map((picture) {
+          const baseUrlWithoutApi = 'http://10.0.2.2:7015';
+          final directImageUrl =
+              '$baseUrlWithoutApi/api/ProductPicture/direct-image/${picture.id}';
+          final pathBasedUrl = '$baseUrlWithoutApi${picture.imagePath}';
 
-              const baseUrlWithoutApi = 'http://10.0.2.2:7015';
-              final directImageUrl =
-                  '$baseUrlWithoutApi/api/ProductPicture/direct-image/${picture.id}';
-              final pathBasedUrl = '$baseUrlWithoutApi${picture.imagePath}';
-
-              print('  Direct URL: $directImageUrl');
-              print('  Path URL: $pathBasedUrl');
-
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: const Color(0xFFE0E0E0),
-                  ),
-                  child:
-                      picture.imagePath != null
-                          ? _buildImageWithFallback(
-                            directImageUrl,
-                            pathBasedUrl,
-                            picture,
-                          )
-                          : const Center(
-                            child: Icon(
-                              Icons.image_not_supported,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
-                          ),
-                ),
-              );
-            }).toList(),
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFFE0E0E0),
+              ),
+              child: picture.imagePath != null
+                  ? _buildImageWithFallback(
+                      directImageUrl,
+                      pathBasedUrl,
+                      picture,
+                    )
+                  : const Center(
+                      child: Icon(
+                        Icons.image_not_supported,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                    ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -118,22 +107,15 @@ class ProductDetailScreen extends StatelessWidget {
       fit: BoxFit.cover,
       headers: {'Authorization': 'Bearer ${Authorization.token}'},
       errorBuilder: (context, error, stackTrace) {
-        print('Direct URL failed: $error');
-        print('Trying path-based URL: $pathUrl');
-
         return Image.network(
           pathUrl,
           fit: BoxFit.cover,
           headers: {'Authorization': 'Bearer ${Authorization.token}'},
           errorBuilder: (context, error2, stackTrace2) {
-            print('Path URL also failed: $error2');
-
             return Image.network(
               pathUrl,
               fit: BoxFit.cover,
               errorBuilder: (context, error3, stackTrace3) {
-                print('Path URL without auth failed: $error3');
-
                 return Container(
                   color: Colors.red[100],
                   child: Column(
@@ -158,7 +140,6 @@ class ProductDetailScreen extends StatelessWidget {
           },
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) {
-              print('Path URL loaded successfully!');
               return child;
             }
             return const Center(child: CircularProgressIndicator());
@@ -167,7 +148,6 @@ class ProductDetailScreen extends StatelessWidget {
       },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
-          print('Direct URL loaded successfully!');
           return child;
         }
         return const Center(child: CircularProgressIndicator());
@@ -289,6 +269,7 @@ class ProductDetailScreen extends StatelessWidget {
                 _showSnackBar(context, 'Proizvod je već u listi želja');
               } else {
                 WishList.addProductToWishList(product.id!);
+                WishList.cacheProduct(product);
                 _showSnackBar(context, 'Proizvod dodan u listu želja');
               }
             } else {
@@ -330,9 +311,9 @@ class ProductDetailScreen extends StatelessWidget {
           ),
         ),
         ElevatedButton.icon(
-          onPressed: () {
+          onPressed: () async {
             if (product.id != null) {
-              ProductReservation.addProductToReservation(product);
+              await ProductReservation.addProductToReservation(product);
               _showSnackBar(context, 'Proizvod dodan u listu za rezervaciju');
             } else {
               _showSnackBar(context, 'Proizvod nema validan ID');
@@ -397,7 +378,7 @@ class ProductDetailScreen extends StatelessWidget {
                   itemCount: recommendedProducts.length,
                   itemBuilder: (context, index) {
                     final product = recommendedProducts[index];
-                    return _buildRecommendedProductCard(product);
+                    return _buildRecommendedProductCard(product, context);
                   },
                 ),
               ),
@@ -408,33 +389,51 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecommendedProductCard(ProductModel product) {
-    return Container(
-      width: 150,
-      margin: const EdgeInsets.only(right: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              'assets/images/furniture_logo.jpg',
-              height: 120,
-              width: 150,
-              fit: BoxFit.cover,
+  Widget _buildRecommendedProductCard(
+      ProductModel product, BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(product: product),
+          ),
+        );
+      },
+      child: Container(
+        width: 150,
+        margin: const EdgeInsets.only(right: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: product.productPictures != null &&
+                      product.productPictures!.isNotEmpty
+                  ? _buildImageWithFallback(
+                      'http://10.0.2.2:7015/api/ProductPicture/direct-image/${product.productPictures!.first.id}',
+                      'http://10.0.2.2:7015${product.productPictures!.first.imagePath}',
+                      product.productPictures!.first,
+                    )
+                  : Image.asset(
+                      'assets/images/furniture_logo.jpg',
+                      height: 120,
+                      width: 150,
+                      fit: BoxFit.cover,
+                    ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            product.name ?? '',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            '${product.price} KM',
-            style: const TextStyle(fontSize: 14, color: Color(0xFF70BC69)),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              product.name ?? '',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              '${product.price} KM',
+              style: const TextStyle(fontSize: 14, color: Color(0xFF70BC69)),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -108,18 +108,16 @@ namespace FurnitureStore.Configuration
                     SeedReports(context);
                 }
 
-                //if (!context.Payments.Any())
-                //{
-                //    SeedPayments(context);
-                //}
-
+                if (!context.DecorativeItems.Any())
+                {
+                    SeedDecorationItems(context);
+                }
 
                 if (!context.ProductPictures.Any())
                 {
                     SeedProductPictures(context);
+                    SeedDecorativeItemPictures(context);
                 }
-
-
             }
 
         }
@@ -223,11 +221,11 @@ namespace FurnitureStore.Configuration
             var sqlCommand = @"
         SET IDENTITY_INSERT Categories ON;
 
-        INSERT INTO Categories (Id, Name, Description, CreatedAt)
+        INSERT INTO Categories (Id, Name, Description, CreatedAt, ImagePath)
         VALUES
-        (1, N'Dnevni boravak', N'Kategorija za namještaj namijenjen dnevnim boravcima', CAST(N'2024-12-10' AS DateTime2)),
-        (2, N'Spavaća soba', N'Kategorija za namještaj namijenjen spavaćim sobama', CAST(N'2024-12-10' AS DateTime2)),
-        (3, N'Kancelarijski namještaj', N'Kategorija za kancelarijski namještaj', CAST(N'2024-12-10' AS DateTime2));
+        (1, N'Dnevni boravak', N'Kategorija za namještaj namijenjen dnevnim boravcima', CAST(N'2024-12-10' AS DateTime2), N'/images/category_living_room.jpg'),
+        (2, N'Spavaća soba', N'Kategorija za namještaj namijenjen spavaćim sobama', CAST(N'2024-12-10' AS DateTime2), N'/images/category_bedroom.jpg'),
+        (3, N'Kancelarijski namještaj', N'Kategorija za kancelarijski namještaj', CAST(N'2024-12-10' AS DateTime2), N'/images/category_office.jpg');
 
         SET IDENTITY_INSERT Categories OFF;
     ";
@@ -240,14 +238,14 @@ namespace FurnitureStore.Configuration
             var sqlCommand = @"
         SET IDENTITY_INSERT Subcategories ON;
 
-        INSERT INTO Subcategories (Id, Name, CategoryId, CreatedAt)
+        INSERT INTO Subcategories (Id, Name, CategoryId, CreatedAt, ImagePath)
         VALUES
-        (1, N'Sofe', 1, CAST(N'2024-12-10' AS DateTime2)),
-        (2, N'Klub stolovi', 1, CAST(N'2024-12-10' AS DateTime2)),
-        (3, N'Kreveti', 2, CAST(N'2024-12-10' AS DateTime2)),
-        (4, N'Ormari', 2, CAST(N'2024-12-10' AS DateTime2)),
-        (5, N'Radni stolovi', 3, CAST(N'2024-12-10' AS DateTime2)),
-        (6, N'Kancelarijske stolice', 3, CAST(N'2024-12-10' AS DateTime2));
+        (1, N'Sofe', 1, CAST(N'2024-12-10' AS DateTime2), N'/images/subcategory_sofas.jpg'),
+        (2, N'Klub stolovi', 1, CAST(N'2024-12-10' AS DateTime2), N'/images/subcategory_tables.jpg'),
+        (3, N'Kreveti', 2, CAST(N'2024-12-10' AS DateTime2), N'/images/subcategory_bed.jpg'),
+        (4, N'Ormari', 2, CAST(N'2024-12-10' AS DateTime2), N'/images/subcategory_wardrobes.jpg'),
+        (5, N'Radni stolovi', 3, CAST(N'2024-12-10' AS DateTime2), N'/images/subcategory_desks.jpg'),
+        (6, N'Kancelarijske stolice', 3, CAST(N'2024-12-10' AS DateTime2), N'/images/subcategory_chairs.jpg');
 
         SET IDENTITY_INSERT Subcategories OFF;
     ";
@@ -320,12 +318,20 @@ namespace FurnitureStore.Configuration
             var sqlCommand = @"
     SET IDENTITY_INSERT Promotions ON;
 
-    INSERT INTO Promotions (Id, Heading, Content, AdminId, StartDate, EndDate, CreatedAt)
+    INSERT INTO Promotions (Id, Heading, Content, AdminId, StartDate, EndDate, CreatedAt, ImagePath)
     VALUES
-    (1, N'Summer Sale', N'Get up to 50% off on selected furniture items', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-09-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2)),
-    (2, N'New Collection', N'Check out our latest furniture collection', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-10-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2));
+    (1, N'Proljetno snizenje', N'Provjerite naše proljetno snizenje', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), CAST(N'2025-09-28T00:00:00.0000000' AS DateTime2), CAST(N'2025-08-28T00:00:00.0000000' AS DateTime2), N'/images/promotion_1.jpg'),
+    (2, N'Nova kolekcija', N'Provjerite našu novu kolekciju', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', CAST(N'2025-08-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-10-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), N'/images/promotion_2.jpg'),
+    (3, N'Zimska kolekcija', N'Provjerite našu zimsku kolekciju', N'ff697def-9c3d-4b5a-84e2-e0ff755e9bc0', CAST(N'2025-08-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-12-28T00:00:00.0000000' AS DateTime2), CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), N'/images/promotion_3.jpg');
 
     SET IDENTITY_INSERT Promotions OFF;
+
+    -- Insert the many-to-many relationships
+    INSERT INTO ProductPromotion (ProductsId, PromotionsId)
+    VALUES
+    (1, 1), (2, 1), (3, 1), (4, 1),  -- Summer Sale products
+    (5, 2), (6, 2),                   -- New Collection products
+    (7, 3), (8, 3);                   -- Winter Collection products
     ";
 
             context.Database.ExecuteSqlRaw(sqlCommand);
@@ -336,11 +342,11 @@ namespace FurnitureStore.Configuration
             var sqlCommand = @"
     SET IDENTITY_INSERT GiftCards ON;
 
-    INSERT INTO GiftCards (Id, Name, CardNumber, Amount, ExpiryDate, IsActivated, CreatedAt, CreatedById, LastModified, LastModifiedBy)
+    INSERT INTO GiftCards (Id, Name, CardNumber, Amount, ExpiryDate, IsActivated, CreatedAt, CreatedById, LastModified, LastModifiedBy, ImagePath)
     VALUES
-    (1, N'Poklon kartica 50 BAM', N'1234-5678-9012-3456', 50, CAST(N'2024-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL),
-    (2, N'Poklon kartica 100 BAM', N'1234-5678-9012-3457', 40, CAST(N'2024-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL),
-    (3, N'Poklon kartica 200 BAM', N'1234-5678-9012-3458', 20, CAST(N'2024-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL);
+    (1, N'Poklon kartica 50 BAM', N'1234-5678-9012-3456', 50, CAST(N'2024-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, N'/images/giftcard_50.jpg'),
+    (2, N'Poklon kartica 100 BAM', N'1234-5678-9012-3457', 40, CAST(N'2025-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, N'/images/gift.jpg'),
+    (3, N'Poklon kartica 200 BAM', N'1234-5678-9012-3458', 20, CAST(N'2025-08-31T00:00:00.0000000' AS DateTime2), 1, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2024-08-28T00:00:00.0000000' AS DateTime2), NULL, N'/images/gift_card_1.jpg');
 
     SET IDENTITY_INSERT GiftCards OFF;
     ";
@@ -439,53 +445,59 @@ namespace FurnitureStore.Configuration
 
             context.Database.ExecuteSqlRaw(sqlCommand);
         }
+        private static void SeedDecorationItems(AppDbContext context)
+        {
+            var sqlCommand = @"
+SET IDENTITY_INSERT DecorativeItems ON;
+
+INSERT INTO DecorativeItems (Id, Name, Description, Price, StockQuantity, Material, Dimensions, Style, Color, IsFragile, CareInstructions, CategoryId, CreatedAt, IsAvailableInStore, IsAvailableOnline)
+VALUES
+(1, N'Vaza Elegance', N'Stilizirana keramička vaza sa zlatnim detaljima.', 45.00, 20, N'Keramika', N'15x15x30 cm', N'Moderni', N'Bijela/Zlatna', 1, N'Obrisati suhom krpom', 1, CAST(N'2024-12-10' AS DateTime2), 1, 1),
+(2, N'Zidni sat Rustic', N'Dekorativni zidni sat u rustičnom stilu.', 60.00, 15, N'Drvo/Metal', N'40x40x5 cm', N'Rustični', N'Smeđa', 0, N'Povremeno obrisati prašinu', 1, CAST(N'2024-12-10' AS DateTime2), 1, 0),
+(3, N'Svijećnjak Stakleni', N'Svijećnjak od stakla za elegantne večeri.', 25.99, 30, N'Staklo', N'10x10x25 cm', N'Klasični', N'Providno', 1, N'Pažljivo čistiti', 2, CAST(N'2024-12-10' AS DateTime2), 1, 1),
+(4, N'Ukrasna figura Mjesec', N'Figura Mjeseca, kreirana od drveta.', 89.90, 10, N'Drvo', N'20x8x18 cm', N'Klasični', N'Crna', 0, N'Samo obrisati', 2, CAST(N'2024-12-10' AS DateTime2), 1, 1),
+(5, N'Zidna dekoracija MetalArt', N'Moderna metalna zidna dekoracija.', 120.00, 5, N'Metal', N'100x50x3 cm', N'Apstraktni', N'Crna/Zlatna', 0, N'Očistiti suhom krpom', 3, CAST(N'2024-12-10' AS DateTime2), 1, 1),
+(6, N'Jastuk Floral', N'Dekorativni jastuk sa cvjetnim uzorkom.', 18.50, 40, N'Tkanina', N'45x45 cm', N'Boho', N'Višebojna', 0, N'Prati na 30°C', 1, CAST(N'2024-12-10' AS DateTime2), 1, 1),
+(7, N'Ukrasni pladanj MirrorLux', N'Pladanj sa ogledalom za ukrasne svrhe.', 35.00, 25, N'Metal/Staklo', N'30x20x2 cm', N'Moderni', N'Srebrna', 1, N'Obrisati mekom krpom', 2, CAST(N'2024-12-10' AS DateTime2), 0, 0);
+
+SET IDENTITY_INSERT DecorativeItems OFF;
+";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
+        }
+
 
         private static void SeedProductPictures(AppDbContext context)
         {
-            // First, ensure the images directory exists and create placeholder images if needed
-            var webRootPath = Directory.GetCurrentDirectory();
-            var imagesPath = Path.Combine(webRootPath, "wwwroot", "images");
-            
-            if (!Directory.Exists(imagesPath))
-            {
-                Directory.CreateDirectory(imagesPath);
-            }
-
-            // Create placeholder image files if they don't exist
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_1.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_2.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_L_1.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_L_2.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_sofa_1.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_bed_1.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_bed_2.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_bed_Y_1.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_table_1.jpg");
-            CreatePlaceholderImageIfNotExists(imagesPath, "sample_table_2.jpg");
-
             var sqlCommand = @"
     SET IDENTITY_INSERT ProductPictures ON;
 
-    INSERT INTO ProductPictures (Id, ImagePath, ProductId, CreatedAt)
+    INSERT INTO ProductPictures (Id, ImagePath, ProductId, CreatedAt, EntityType)
     VALUES
     -- Images for Product 1 (Sofa Model X)
-    (1, N'/images/sample_sofa_1.jpg', 1, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
-    (2, N'/images/sample_sofa_2.jpg', 1, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (1, N'/images/sample_sofa_1.jpg', 1, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
+    (2, N'/images/sample_sofa_2.jpg', 1, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
     
     -- Images for Product 2 (Krevet Model Y)
-    (3, N'/images/sample_bed_1.jpg', 2, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
-    (4, N'/images/sample_bed_2.jpg', 2, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (3, N'/images/sample_bed_1.jpg', 2, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
+    (4, N'/images/sample_bed_2.jpg', 2, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
     
     -- Images for Product 3 (Klub sto Elegance)
-    (5, N'/images/sample_table_1.jpg', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
-    (6, N'/images/sample_table_2.jpg', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (5, N'/images/sample_table_1.jpg', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
+    (6, N'/images/sample_table_2.jpg', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
     
     -- Images for Product 7 (Sofa L-Shape Comfort)
-    (7, N'/images/sample_sofa_L_1.jpg', 7, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
-    (8, N'/images/sample_sofa_L_2.jpg', 7, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (7, N'/images/sample_sofa_L_1.jpg', 7, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
+    (8, N'/images/sample_sofa_L_2.jpg', 7, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
+
+    -- Images for Product 8 (Noćni sto Elegant)
+    (9, N'/images/table_2.jpg', 8, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
+    (20, N'/images/table_3.jpg', 8, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product'),
     
     -- Images for Product 9 (Klub sto Rustic)
-    (9, N'/images/sample_table_1.jpg', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2))
+    (19, N'/images/table_1.jpg', 9, CAST(N'2024-12-15T10:00:00' AS DateTime2), N'Product');
+
+   
 
     SET IDENTITY_INSERT ProductPictures OFF;
     ";
@@ -493,15 +505,40 @@ namespace FurnitureStore.Configuration
             context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
-        private static void CreatePlaceholderImageIfNotExists(string imagesPath, string fileName)
+        private static void SeedDecorativeItemPictures(AppDbContext context)
         {
-            var filePath = Path.Combine(imagesPath, fileName);
-            if (!File.Exists(filePath))
-            {
-                // Create a simple 1x1 pixel placeholder image (you can replace this with actual image creation logic)
-                var placeholderContent = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==");
-                File.WriteAllBytes(filePath, placeholderContent);
-            }
+            var sqlCommand = @"
+    SET IDENTITY_INSERT ProductPictures ON;
+
+    INSERT INTO ProductPictures (Id, ImagePath, EntityId, EntityType, DecorativeItemId, CreatedAt)
+    VALUES
+    -- Images for Vaza Elegance (ID: 1)
+    (10, N'/images/decor_vase_1.jpg', 1, N'DecorativeItem', 1, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (11, N'/images/decor_vase_2.jpg', 1, N'DecorativeItem', 1, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Zidni sat Rustic (ID: 2)
+    (12, N'/images/decor_clock_1.jpg', 2, N'DecorativeItem', 2, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    (13, N'/images/decor_clock_2.jpg', 2, N'DecorativeItem', 2, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Svijećnjak Stakleni (ID: 3)
+    (14, N'/images/decor_candle_1.jpg', 3, N'DecorativeItem', 3, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Ukrasna figura Mjesec (ID: 4)
+    (15, N'/images/decor_moon_1.jpg', 4, N'DecorativeItem', 4, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Zidna dekoracija MetalArt (ID: 5)
+    (16, N'/images/decor_wall_1.jpg', 5, N'DecorativeItem', 5, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Jastuk Floral (ID: 6)
+    (17, N'/images/decor_pillow_1.jpg', 6, N'DecorativeItem', 6, CAST(N'2024-12-15T10:00:00' AS DateTime2)),
+    
+    -- Images for Ukrasni pladanj MirrorLux (ID: 7)
+    (18, N'/images/decor_tray_1.jpg', 7, N'DecorativeItem', 7, CAST(N'2024-12-15T10:00:00' AS DateTime2));
+
+    SET IDENTITY_INSERT ProductPictures OFF;
+    ";
+
+            context.Database.ExecuteSqlRaw(sqlCommand);
         }
 
     }

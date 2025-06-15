@@ -7,6 +7,7 @@ import 'package:furniturestore_mobile/screens/product/product_list_screen.dart';
 import 'package:furniturestore_mobile/widgets/master_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:furniturestore_mobile/utils/utils.dart';
 
 class PromotionListScreen extends StatefulWidget {
   const PromotionListScreen({super.key});
@@ -105,7 +106,7 @@ class _PromotionListScreenState extends State<PromotionListScreen> {
                                   ),
                                   if (promotion.startDate != null &&
                                       promotion.endDate != null) ...[
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 8),
                                     promotion.endDate!.isBefore(DateTime.now())
                                         ? const Row(
                                             children: [
@@ -168,15 +169,84 @@ class _PromotionListScreenState extends State<PromotionListScreen> {
                           ),
                           Expanded(
                             flex: 2,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/furniture_logo.jpg',
-                                  width: 80,
-                                  height: 80,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.grey.shade400,
+                                  width: 1,
                                 ),
-                              ],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: promotion.imagePath != null &&
+                                      promotion.imagePath!.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        promotion.imagePath!.startsWith('http')
+                                            ? promotion.imagePath!
+                                            : 'http://10.0.2.2:7015${promotion.imagePath}',
+                                        height: 120,
+                                        width: 120,
+                                        fit: BoxFit.cover,
+                                        headers: {
+                                          'Authorization':
+                                              'Bearer ${Authorization.token}'
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Container(
+                                            height: 120,
+                                            width: 120,
+                                            decoration: BoxDecoration(
+                                              color: Color.fromARGB(
+                                                  255, 116, 143, 187),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: const Icon(
+                                              Icons.local_offer,
+                                              size: 40,
+                                              color: Colors.white,
+                                            ),
+                                          );
+                                        },
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return SizedBox(
+                                            height: 120,
+                                            width: 120,
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                value: loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : Container(
+                                      height: 120,
+                                      width: 120,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Color.fromARGB(255, 116, 143, 187),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.local_offer,
+                                        size: 40,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                             ),
                           ),
                         ],

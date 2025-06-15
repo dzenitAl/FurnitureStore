@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:furniturestore_admin/models/gift_card/gift_card.dart';
 import 'package:furniturestore_admin/providers/gift_card_provider.dart';
+import 'package:furniturestore_admin/utils/utils.dart';
 import 'package:furniturestore_admin/widgets/custom_text_field.dart';
 import 'package:provider/provider.dart';
+import 'package:furniturestore_admin/utils/image_handling_mixin.dart';
+import 'package:image_picker/image_picker.dart';
 
 class GiftCardDetailScreen extends StatefulWidget {
   final GiftCardModel? giftCard;
@@ -14,12 +19,16 @@ class GiftCardDetailScreen extends StatefulWidget {
   _GiftCardDetailScreenState createState() => _GiftCardDetailScreenState();
 }
 
-class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
+class _GiftCardDetailScreenState extends State<GiftCardDetailScreen>
+    with ImageHandlingMixin {
   final _formKey = GlobalKey<FormBuilderState>();
   bool _isExpired = false;
   DateTime? _expiryDate;
   Map<String, dynamic> _initialValue = {};
   late GiftCardProvider _giftCardProvider;
+  GiftCardModel? _giftCard;
+  File? _selectedImage;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -35,6 +44,7 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
       'expiryDate': _expiryDate,
       'isActivated': widget.giftCard?.isActivated ?? false
     };
+    _giftCard = widget.giftCard;
   }
 
   @override
@@ -238,12 +248,75 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          "assets/images/gifts.jpg",
-                          fit: BoxFit.cover,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Slika poklon kartice',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1D3557),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: _selectedImage != null
+                                  ? Image.file(
+                                      _selectedImage!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return _buildErrorPlaceholder(
+                                            'Error loading selected image');
+                                      },
+                                    )
+                                  : _giftCard?.imagePath != null
+                                      ? Image.network(
+                                          _giftCard!.imagePath!
+                                                  .startsWith('http')
+                                              ? _giftCard!.imagePath!
+                                              : '$baseUrl${_giftCard!.imagePath}',
+                                          fit: BoxFit.cover,
+                                          headers: {
+                                            'Authorization':
+                                                'Bearer ${Authorization.token}'
+                                          },
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Center(
+                                              child: CircularProgressIndicator(
+                                                value: loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            );
+                                          },
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return _buildErrorPlaceholder(
+                                                'Error loading image');
+                                          },
+                                        )
+                                      : _buildErrorPlaceholder('Nema slike'),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: _isUploadingImage ? null : _pickImage,
+                            icon: const Icon(Icons.image),
+                            label: const Text("Odaberi sliku"),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -256,44 +329,112 @@ class _GiftCardDetailScreenState extends State<GiftCardDetailScreen> {
     );
   }
 
+  Widget _buildErrorPlaceholder(String message) {
+    return Container(
+      color: Colors.grey[200],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.image_not_supported_outlined,
+            color: Colors.grey[600],
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
   void _onSubmit() async {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
-      final formData = _formKey.currentState?.value;
-      print('Form Data: $formData');
-
-      var request = Map.from(_formKey.currentState!.value);
-
-      if (_expiryDate != null) {
-        request['expiryDate'] = _expiryDate!.toIso8601String();
-      }
-
-      print('Final Request: $request');
+      setState(() {
+        _isUploadingImage = true;
+      });
 
       try {
-        if (widget.giftCard == null) {
-          await _giftCardProvider.insert(request);
+        final formData = _formKey.currentState?.value;
+        var request = Map.from(_formKey.currentState!.value);
+
+        if (_expiryDate != null) {
+          request['expiryDate'] = _expiryDate!.toIso8601String();
+        }
+
+        GiftCardModel savedGiftCard;
+        if (_giftCard == null) {
+          savedGiftCard = await _giftCardProvider.insert(request);
+          _giftCard = savedGiftCard;
         } else {
-          await _giftCardProvider.update(widget.giftCard!.id!, request);
+          savedGiftCard =
+              await _giftCardProvider.update(_giftCard!.id!, request);
+          _giftCard = savedGiftCard;
+        }
+
+        if (_selectedImage != null) {
+          await uploadImage('GiftCard', savedGiftCard.id!, _selectedImage!,
+              Authorization.token!);
+
+          final updatedGiftCard =
+              await _giftCardProvider.getById(savedGiftCard.id!);
+          setState(() {
+            _giftCard = updatedGiftCard;
+            _selectedImage = null;
+          });
         }
 
         Navigator.pop(context, true);
-      } on Exception catch (e) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text("Error"),
-            content: Text(e.toString()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
+      } catch (e) {
+        print("Error saving gift card: $e");
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: const Text("Error"),
+              content: Text("Error saving gift card: $e"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+        }
+      } finally {
+        setState(() {
+          _isUploadingImage = false;
+        });
       }
     } else {
       print('Validation failed');
     }
+  }
+
+  void _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      print("Image picked: ${pickedFile.path}");
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    } else {
+      print("No image selected");
+    }
+  }
+
+  String _formatDateForDisplay(DateTime? date) {
+    if (date == null) return 'No date selected';
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

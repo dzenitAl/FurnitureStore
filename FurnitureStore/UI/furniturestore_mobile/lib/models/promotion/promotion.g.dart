@@ -24,6 +24,8 @@ PromotionModel _$PromotionModelFromJson(Map<String, dynamic> json) =>
       endDate: json['endDate'] == null
           ? null
           : DateTime.parse(json['endDate'] as String),
+      imagePath: json['imagePath'] as String?,
+      imageId: (json['imageId'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$PromotionModelToJson(PromotionModel instance) =>
@@ -36,4 +38,6 @@ Map<String, dynamic> _$PromotionModelToJson(PromotionModel instance) =>
       'products': instance.products,
       'startDate': instance.startDate?.toIso8601String(),
       'endDate': instance.endDate?.toIso8601String(),
+      'imagePath': instance.imagePath,
+      'imageId': instance.imageId,
     };

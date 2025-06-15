@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:furniturestore_admin/components/DeleteModal.dart';
 import 'package:furniturestore_admin/models/category/category.dart';
 import 'package:furniturestore_admin/models/search_result.dart';
+import 'package:furniturestore_admin/providers/base_provider.dart';
 import 'package:furniturestore_admin/providers/category_provider.dart';
 import 'package:furniturestore_admin/screens/category/category_detail_screen.dart';
+import 'package:furniturestore_admin/utils/utils.dart';
 import 'package:furniturestore_admin/widgets/master_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -18,8 +20,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   late CategoryProvider _categoryProvider;
   SearchResult<CategoryModel>? result;
   final TextEditingController _nameFilterController = TextEditingController();
-
   bool _isLoading = false;
+  final String baseUrl = 'http://localhost:7015';
 
   @override
   void didChangeDependencies() {
@@ -33,49 +35,33 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     super.initState();
   }
 
-  _loadData({Map<String, String>? filters}) async {
+  Future<void> _loadData({Map<String, String>? filters}) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
       print("Loading categories...");
-
       var data = await _categoryProvider.get();
-      print("Response received");
+
+      print("Raw category data: ${data.result}");
 
       setState(() {
-        _isLoading = false;
-        result = SearchResult<CategoryModel>();
-        result!.count = data.count;
-
-        final nameFilter = _nameFilterController.text.toLowerCase();
-        if (nameFilter.isEmpty) {
-          result!.result = data.result;
-        } else {
-          result!.result = data.result.where((category) {
-            final categoryName = category.name?.toLowerCase() ?? '';
-            return categoryName.contains(nameFilter);
-          }).toList();
-        }
-      });
-    } catch (error) {
-      print("Error details: $error");
-      setState(() {
+        result = data;
         _isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading categories: ${error.toString()}'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: () => _loadData(filters: filters),
-          ),
-        ),
-      );
+      print("Categories loaded: ${result?.result.length}");
+      for (var category in result?.result ?? []) {
+        print(
+            "Category: ${category.name}, Image path: ${category.imagePath}, Raw: $category");
+      }
+    } catch (e, stackTrace) {
+      print("Error loading categories: $e");
+      print("Stack trace: $stackTrace");
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -83,6 +69,43 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     _loadData(filters: {
       'name': _nameFilterController.text,
     });
+  }
+
+  Widget _buildCategoryImage(CategoryModel category) {
+    if (category.imagePath == null || category.imagePath!.isEmpty) {
+      return Container(
+        color: Colors.grey[200],
+        child: const Icon(Icons.image_not_supported),
+      );
+    }
+
+    final imageUrl = category.imagePath!.startsWith('http')
+        ? category.imagePath!
+        : '$baseUrl${category.imagePath}';
+
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      headers: {'Authorization': 'Bearer ${Authorization.token}'},
+      errorBuilder: (context, error, stackTrace) {
+        print("Error loading image: $error");
+        return Container(
+          color: Colors.grey[200],
+          child: const Icon(Icons.image_not_supported),
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Center(
+          child: CircularProgressIndicator(
+            value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded /
+                    loadingProgress.expectedTotalBytes!
+                : null,
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -174,6 +197,14 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                         columns: const [
                           DataColumn(
                             label: Text(
+                              'Slika',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1D3557)),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
                               'Naziv',
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
@@ -189,9 +220,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                             ),
                           ),
                           DataColumn(
-                            label: Text(
-                              '',
-                            ),
+                            label: Text(''),
                           ),
                         ],
                         rows: result?.result.map((CategoryModel category) {
@@ -214,9 +243,22 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                                 },
                                 cells: [
                                   DataCell(
+                                    Container(
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey[300]!,
+                                          width: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: _buildCategoryImage(category),
+                                    ),
+                                  ),
+                                  DataCell(
                                     Text(
                                       category.name ?? '',
-                                      textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w500,
                                         color: Color(0xFF2C5C7F),
@@ -227,7 +269,6 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                                   DataCell(
                                     Text(
                                       category.description ?? '',
-                                      textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w500,
                                         color: Color(0xFF2C5C7F),

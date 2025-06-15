@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace FurnitureStore.Services.Interfaces
 {
-    public interface IGiftCardService : ICRUDService<Models.GiftCard.GiftCard, GiftCardSearchObject, GiftCardInsertRequest, GiftCardUpdateRequest, long>
+    public interface IGiftCardService :
+       ICRUDService<Models.GiftCard.GiftCard, GiftCardSearchObject, GiftCardInsertRequest, GiftCardUpdateRequest, long>,
+       IBaseImageHandlingService<Models.GiftCard.GiftCard, long>
     {
-        Task<Models.GiftCard.GiftCard> UpdateImage(long id, IFormFile file);
-        Task<bool> DeleteImage(long id);
     }
 }

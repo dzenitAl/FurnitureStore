@@ -8,16 +8,37 @@ class NotificationModel {
   String? heading;
   String? content;
   String? adminId;
+  bool? isRead;
+  @JsonKey(fromJson: _dateFromJson, toJson: _dateToJson)
+  DateTime? createdAt;
 
   NotificationModel({
     this.id,
     this.heading,
     this.content,
     this.adminId,
+    this.isRead,
+    this.createdAt,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) =>
       _$NotificationModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$NotificationModelToJson(this);
+
+  static DateTime? _dateFromJson(dynamic date) {
+    if (date == null) return null;
+    if (date is DateTime) return date;
+    try {
+      return DateTime.parse(date.toString());
+    } catch (e) {
+      print('Error parsing date: $date');
+      return null;
+    }
+  }
+
+  static String? _dateToJson(DateTime? date) {
+    if (date == null) return null;
+    return date.toIso8601String();
+  }
 }
