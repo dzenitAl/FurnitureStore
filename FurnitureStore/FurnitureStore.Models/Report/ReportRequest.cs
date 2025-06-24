@@ -13,8 +13,13 @@ namespace FurnitureStore.Models.Report
         public Month Month { get; set; }
         public ReportType ReportType { get; set; }
         public int Year { get; set; }
-        public string Content { get; set; }
+        public string? Content { get; set; }
         public string AdminId { get; set; }
+        public string CustomerId { get; set; }
+        public string? CreatedById { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? LastModifiedBy { get; set; }
+        public DateTime? LastModified { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
-
 }

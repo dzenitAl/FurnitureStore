@@ -88,10 +88,21 @@ class _ReportListScreenState extends State<ReportListScreen> {
   }
 
   void _applyFilters() {
-    _loadData(filters: {
-      'month': _monthFilterController.text,
-      'year': _yearFilterController.text,
-    });
+    Map<String, String> filters = {};
+
+    if (_yearFilterController.text.isNotEmpty) {
+      filters['year'] = _yearFilterController.text;
+    }
+
+    if (_monthFilterController.text.isNotEmpty) {
+      int monthIndex = Month.values.indexWhere((month) =>
+          month.toString().split('.').last == _monthFilterController.text);
+      if (monthIndex >= 0) {
+        filters['month'] = monthIndex.toString();
+      }
+    }
+
+    _loadData(filters: filters);
   }
 
   String _getReportTypeName(int? type) {
@@ -353,14 +364,22 @@ class _ReportListScreenState extends State<ReportListScreen> {
                                   fontFamily: 'Roboto',
                                 ),
                               )),
-                              DataCell(Text(
-                                report.content ?? '',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF2C5C7F),
-                                  fontFamily: 'Roboto',
+                              DataCell(
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.2,
+                                  child: Text(
+                                    report.content ?? '',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C5C7F),
+                                      fontFamily: 'Roboto',
+                                    ),
+                                  ),
                                 ),
-                              )),
+                              ),
                               DataCell(Text(
                                 _getReportTypeName(report.reportType),
                                 style: const TextStyle(

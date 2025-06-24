@@ -75,7 +75,12 @@ namespace FurnitureStore.Services.MappingProfile
 
 
             CreateMap<Database.Report, Report>();
-            CreateMap<ReportRequest, Database.Report>();
+            CreateMap<ReportRequest, Database.Report>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.CreatedById, opt => opt.MapFrom(src => src.CreatedById))
+                .ForMember(dest => dest.LastModified, opt => opt.MapFrom(src => src.LastModified))
+                .ForMember(dest => dest.LastModifiedBy, opt => opt.MapFrom(src => src.LastModifiedBy))
+                .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt));
             CreateMap<Database.Promotion, Promotion>();
             CreateMap<PromotionRequest, Database.Promotion>();
             CreateMap<Database.WishList, WishList>();
